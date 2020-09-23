@@ -1,0 +1,242 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.2.5
+  creationTimestamp: null
+  name: prestoclusters.prestooperator.k8s.io
+spec:
+  group: prestooperator.k8s.io
+  names:
+    kind: PrestoCluster
+    listKind: PrestoClusterList
+    plural: prestoclusters
+    shortNames:
+    - pcs
+    singular: prestocluster
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: PrestoCluster is the Schema for the prestoclusters API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: PrestoClusterSpec defines the desired state of PrestoCluster
+          properties:
+            catalogConfig:
+              properties:
+                configmapName:
+                  type: string
+                fs.cosn.bucket.region:
+                  type: string
+                fs.cosn.userinfo.secretId:
+                  type: string
+                fs.cosn.userinfo.secretKey:
+                  type: string
+                fs.defaultFS:
+                  type: string
+                hiveMetastoreIP:
+                  type: string
+                hiveMetastorePort:
+                  type: string
+              required:
+              - configmapName
+              - fs.cosn.bucket.region
+              - fs.cosn.userinfo.secretId
+              - fs.cosn.userinfo.secretKey
+              - fs.defaultFS
+              - hiveMetastoreIP
+              - hiveMetastorePort
+              type: object
+            coordinatorConfig:
+              properties:
+                allowAttachSelf:
+                  type: string
+                dataDir:
+                  type: string
+                discoveryURI:
+                  type: string
+                environment:
+                  type: string
+                g1HeapRegionSize:
+                  type: string
+                httpServerPort:
+                  type: string
+                maxMemory:
+                  type: string
+                maxMemoryPerNode:
+                  type: string
+                resources:
+                  description: 'Name               string `json:"name"` Compute resources
+                    required by each Coordinator container. If omitted, a default
+                    value will be used. Cannot be updated. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                  properties:
+                    limits:
+                      additionalProperties:
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                        x-kubernetes-int-or-string: true
+                      description: 'Limits describes the maximum amount of compute
+                        resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                      type: object
+                    requests:
+                      additionalProperties:
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                        x-kubernetes-int-or-string: true
+                      description: 'Requests describes the minimum amount of compute
+                        resources required. If Requests is omitted for a container,
+                        it defaults to Limits if that is explicitly specified, otherwise
+                        to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                      type: object
+                  type: object
+                scaleWriters:
+                  type: string
+                totalMemoryPerNode:
+                  type: string
+                writerMinSize:
+                  type: string
+                xmx:
+                  type: string
+              required:
+              - allowAttachSelf
+              - dataDir
+              - discoveryURI
+              - environment
+              - g1HeapRegionSize
+              - httpServerPort
+              - maxMemory
+              - maxMemoryPerNode
+              - scaleWriters
+              - totalMemoryPerNode
+              - writerMinSize
+              - xmx
+              type: object
+            image:
+              type: string
+            name:
+              description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+                Important: Run "make" to regenerate code after modifying this file'
+              type: string
+            prestoConfig:
+              properties:
+                configmapName:
+                  type: string
+              required:
+              - configmapName
+              type: object
+            workerConfig:
+              properties:
+                allowAttachSelf:
+                  type: string
+                dataDir:
+                  type: string
+                environment:
+                  type: string
+                g1HeapRegionSize:
+                  type: string
+                httpServerPort:
+                  type: string
+                maxMemory:
+                  type: string
+                maxMemoryPerNode:
+                  type: string
+                resources:
+                  description: Name               string `json:"name"` Compute resources
+                    required by each Worker container. If omitted, a default value
+                    will be used. Cannot be updated.
+                  properties:
+                    limits:
+                      additionalProperties:
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                        x-kubernetes-int-or-string: true
+                      description: 'Limits describes the maximum amount of compute
+                        resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                      type: object
+                    requests:
+                      additionalProperties:
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                        x-kubernetes-int-or-string: true
+                      description: 'Requests describes the minimum amount of compute
+                        resources required. If Requests is omitted for a container,
+                        it defaults to Limits if that is explicitly specified, otherwise
+                        to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                      type: object
+                  type: object
+                totalMemoryPerNode:
+                  type: string
+                xmx:
+                  description: DiscoveryURI       string                      `json:"discoveryURI"`
+                  type: string
+              required:
+              - allowAttachSelf
+              - dataDir
+              - environment
+              - g1HeapRegionSize
+              - httpServerPort
+              - maxMemory
+              - maxMemoryPerNode
+              - totalMemoryPerNode
+              - xmx
+              type: object
+            workers:
+              format: int32
+              type: integer
+          required:
+          - catalogConfig
+          - coordinatorConfig
+          - image
+          - name
+          - prestoConfig
+          - workerConfig
+          - workers
+          type: object
+        status:
+          description: PrestoClusterStatus defines the observed state of PrestoCluster
+          properties:
+            availableWorkers:
+              description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
+                of cluster Important: Run "make" to regenerate code after modifying
+                this file'
+              format: int32
+              type: integer
+          required:
+          - availableWorkers
+          type: object
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

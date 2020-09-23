@@ -1,0 +1,7 @@
+apiVersion: prestooperator.k8s.io/v1alpha1
+kind: PrestoCluster
+metadata:
+  name: prestocluster-sample
+spec:
+  # Add fields here
+  foo: bar

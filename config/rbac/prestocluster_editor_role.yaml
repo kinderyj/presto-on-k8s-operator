@@ -1,0 +1,24 @@
+# permissions for end users to edit prestoclusters.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: prestocluster-editor-role
+rules:
+- apiGroups:
+  - prestooperator.k8s.io
+  resources:
+  - prestoclusters
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - prestooperator.k8s.io
+  resources:
+  - prestoclusters/status
+  verbs:
+  - get

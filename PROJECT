@@ -1,0 +1,7 @@
+domain: k8s.io
+repo: github.com/kinderyj/presto-operator
+resources:
+- group: prestooperator
+  kind: PrestoCluster
+  version: v1alpha1
+version: "2"

@@ -1,5 +1,5 @@
 /*
-Copyright 2019 Google LLC.
+Copyright 2020 yujunwang.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -66,17 +66,10 @@ func (reconciler *ClusterReconciler) reconcile() (ctrl.Result, error) {
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-
-	err = reconciler.reconcileJobManagerService()
+	err = reconciler.reconcileCoordinatorService()
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-
-	// err = reconciler.reconcileJobManagerIngress()
-	// if err != nil {
-	// 	return ctrl.Result{}, err
-	// }
-
 	err = reconciler.reconcileWorkerDeployment()
 	if err != nil {
 		return ctrl.Result{}, err
@@ -94,7 +87,7 @@ func (reconciler *ClusterReconciler) reconcileCoordinatorDeployment() error {
 
 func (reconciler *ClusterReconciler) reconcileWorkerDeployment() error {
 	return reconciler.reconcileDeployment(
-		"TaskManager",
+		"Worker",
 		reconciler.desired.WorkerDeployment,
 		reconciler.observed.workerDeployment)
 }
@@ -111,8 +104,6 @@ func (reconciler *ClusterReconciler) reconcileDeployment(
 
 	if desiredDeployment != nil && observedDeployment != nil {
 		log.Info("Deployment already exists, no action")
-		//return nil
-		// TODO(dagang): compare and update if needed.
 		return reconciler.updateDeployment(desiredDeployment, component)
 	}
 
@@ -172,23 +163,22 @@ func (reconciler *ClusterReconciler) deleteDeployment(
 	return err
 }
 
-func (reconciler *ClusterReconciler) reconcileJobManagerService() error {
-	var desiredJmService = reconciler.desired.CoordinatorService
-	var observedJmService = reconciler.observed.coordinatorService
+func (reconciler *ClusterReconciler) reconcileCoordinatorService() error {
+	var desiredCoordinatorService = reconciler.desired.CoordinatorService
+	var observedCoordinatorService = reconciler.observed.coordinatorService
 
-	if desiredJmService != nil && observedJmService == nil {
-		return reconciler.createService(desiredJmService, "JobManager")
+	if desiredCoordinatorService != nil && observedCoordinatorService == nil {
+		return reconciler.createService(desiredCoordinatorService, "CoordinatorService")
 	}
 
-	if desiredJmService != nil && observedJmService != nil {
-		reconciler.log.Info("JobManager service already exists, no action")
+	if desiredCoordinatorService != nil && observedCoordinatorService != nil {
+		reconciler.log.Info("CoordinatorService service already exists, no action")
 		return nil
-		// TODO(dagang): compare and update if needed.
+		// TODO: compare and update if needed.
 	}
 
-	if desiredJmService == nil && observedJmService != nil {
-		return reconciler.deleteService(observedJmService, "JobManager")
-		// TODO(dagang): compare and update if needed.
+	if desiredCoordinatorService == nil && observedCoordinatorService != nil {
+		return reconciler.deleteService(observedCoordinatorService, "CoordinatorService")
 	}
 
 	return nil
@@ -226,27 +216,6 @@ func (reconciler *ClusterReconciler) deleteService(
 	}
 	return err
 }
-
-// func (reconciler *ClusterReconciler) reconcileJobManagerIngress() error {
-// 	var desiredJmIngress = reconciler.desired.JmIngress
-// 	var observedJmIngress = reconciler.observed.jmIngress
-
-// 	if desiredJmIngress != nil && observedJmIngress == nil {
-// 		return reconciler.createIngress(desiredJmIngress, "JobManager")
-// 	}
-
-// 	if desiredJmIngress != nil && observedJmIngress != nil {
-// 		reconciler.log.Info("JobManager ingress already exists, no action")
-// 		return nil
-// 		// TODO: compare and update if needed.
-// 	}
-
-// 	if desiredJmIngress == nil && observedJmIngress != nil {
-// 		return reconciler.deleteIngress(observedJmIngress, "JobManager")
-// 	}
-
-// 	return nil
-// }
 
 func (reconciler *ClusterReconciler) createIngress(
 	ingress *extensionsv1beta1.Ingress, component string) error {

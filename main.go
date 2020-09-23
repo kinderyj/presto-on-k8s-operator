@@ -45,10 +45,8 @@ func init() {
 
 func main() {
 	var metricsAddr string
-	var v string
 	var enableLeaderElection bool
 	flag.StringVar(&metricsAddr, "metrics-addr", ":18080", "The address the metric endpoint binds to.")
-	flag.StringVar(&v, "v", "2", "log level")
 	flag.BoolVar(&enableLeaderElection, "enable-leader-election", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
@@ -68,9 +66,10 @@ func main() {
 		os.Exit(1)
 	}
 	if err = (&controllers.PrestoClusterReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("PrestoCluster"),
-		Scheme: mgr.GetScheme(),
+		Client:   mgr.GetClient(),
+		Log:      ctrl.Log.WithName("controllers").WithName("PrestoCluster"),
+		Scheme:   mgr.GetScheme(),
+		Recorder: mgr.GetEventRecorderFor("presto-operator"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "PrestoCluster")
 		os.Exit(1)

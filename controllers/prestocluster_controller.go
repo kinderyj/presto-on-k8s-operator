@@ -21,6 +21,7 @@ import (
 
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -30,13 +31,26 @@ import (
 // PrestoClusterReconciler reconciles a PrestoCluster object
 type PrestoClusterReconciler struct {
 	client.Client
-	Log    logr.Logger
-	Scheme *runtime.Scheme
+	Log      logr.Logger
+	Scheme   *runtime.Scheme
+	Recorder record.EventRecorder
 }
 
 // +kubebuilder:rbac:groups=prestooperator.k8s.io,resources=prestoclusters,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=prestooperator.k8s.io,resources=prestoclusters/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=apps,resources=deployments/status,verbs=get
+// +kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch
+// +kubebuilder:rbac:groups=core,resources=pods/status,verbs=get
+// +kubebuilder:rbac:groups=core,resources=services,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core,resources=services/status,verbs=get
+// +kubebuilder:rbac:groups=core,resources=events,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core,resources=events/status,verbs=get
+// +kubebuilder:rbac:groups=core,resources=configmaps,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=extensions,resources=ingresses,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=extensions,resources=ingresses/status,verbs=get
 
+// Reconcile implements the Reconciler interface in the controller-runime.
 func (r *PrestoClusterReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	_ = context.Background()
 	_ = r.Log.WithValues("prestocluster", req.NamespacedName)
@@ -49,36 +63,30 @@ func (r *PrestoClusterReconciler) Reconcile(req ctrl.Request) (ctrl.Result, erro
 		request:   req,
 		context:   context.Background(),
 		log:       log,
-		//recorder: r.Mgr.GetEventRecorderFor("FlinkOperator"),
-		observed: ObservedClusterState{},
+		recorder:  r.Recorder,
+		observed:  ObservedClusterState{},
 	}
 	return handler.reconcile(req)
-
-	//return ctrl.Result{}, nil
 }
 
-// PrestoClusterHandler holds the context and state for a
-// reconcile request.
+// PrestoClusterHandler holds the context and state for a reconcile request.
 type PrestoClusterHandler struct {
 	k8sClient client.Client
-	//flinkClient flinkclient.FlinkClient
-	request ctrl.Request
-	context context.Context
-	log     logr.Logger
-	//recorder    record.EventRecorder
-	observed ObservedClusterState
-	desired  DesiredClusterState
+	request   ctrl.Request
+	context   context.Context
+	log       logr.Logger
+	recorder  record.EventRecorder
+	observed  ObservedClusterState
+	desired   DesiredClusterState
 }
 
 func (handler *PrestoClusterHandler) reconcile(
 	request ctrl.Request) (ctrl.Result, error) {
 	var k8sClient = handler.k8sClient
-	//var flinkClient = handler.flinkClient
 	var log = handler.log
 	var context = handler.context
 	var observed = &handler.observed
 	var desired = &handler.desired
-	//var statusChanged bool
 	var err error
 	log.Info("==========================================\n")
 	log.Info("Reconcile 1: Inspect the current state.\n")
@@ -95,31 +103,6 @@ func (handler *PrestoClusterHandler) reconcile(
 	}
 	log.Info("==========================================\n")
 	log.Info("Reconcile 2: Get the desired prestocluster object.\n")
-
-	// var updater = ClusterStatusUpdater{
-	// 	k8sClient: handler.k8sClient,
-	// 	context:   handler.context,
-	// 	log:       handler.log,
-	// 	//recorder:  handler.recorder,
-	// 	observed: handler.observed,
-	// }
-	// statusChanged, err = updater.updateStatusIfChanged()
-	// if err != nil {
-	// 	log.Error(err, "Failed to update cluster status")
-	// 	return ctrl.Result{}, err
-	// }
-	// if statusChanged {
-	// 	log.Info(
-	// 		"Wait status to be stable before taking further actions.",
-	// 		"requeueAfter",
-	// 		5)
-	// 	return ctrl.Result{
-	// 		Requeue: true, RequeueAfter: 5 * time.Second,
-	// 	}, nil
-	// }
-
-	// log.Info("---------- 3. Compute the desired state ----------")
-
 	*desired = getDesiredClusterState(observed.cluster)
 	if desired.PrestoConfigMap != nil {
 		log.Info("Desired state", "PrestoConfigMap", *desired.PrestoConfigMap)
@@ -159,7 +142,7 @@ func (handler *PrestoClusterHandler) reconcile(
 		log:       handler.log,
 		observed:  handler.observed,
 		desired:   handler.desired,
-		//recorder:    handler.recorder,
+		recorder:  handler.recorder,
 	}
 	result, err := reconciler.reconcile()
 	if err != nil {
@@ -172,16 +155,12 @@ func (handler *PrestoClusterHandler) reconcile(
 	// current state of the world
 	log.Info("==========================================\n")
 	log.Info("Reconcile 4: start to update Presto cluster Status.\n")
-	// err = reconciler.updatePrestoStatus(presto, deployment)
-	// if err != nil {
-	// 	return err
-	// }
 	var statusUpdater = ClusterStatusUpdater{
 		k8sClient: handler.k8sClient,
 		context:   handler.context,
 		log:       handler.log,
-		//recorder:  handler.recorder,
-		observed: handler.observed,
+		recorder:  handler.recorder,
+		observed:  handler.observed,
 	}
 	if statusUpdater.observed.cluster == nil {
 		statusUpdater.log.Info("The cluster has been deleted, no status to update")
@@ -195,6 +174,8 @@ func (handler *PrestoClusterHandler) reconcile(
 	return result, err
 }
 
+// SetupWithManager defines the type of Object being *reconciled*, and configures the
+// ControllerManagedBy to respond to create / delete /update events by *reconciling the object*.
 func (r *PrestoClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&prestooperatorv1alpha1.PrestoCluster{}).

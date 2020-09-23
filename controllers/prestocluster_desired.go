@@ -1,5 +1,5 @@
 /*
-Copyright 2019 Google LLC.
+Copyright 2020 yujunwang.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,41 +18,19 @@ package controllers
 
 import (
 	"fmt"
-	"math"
-	"regexp"
 
 	prestooperatorv1alpha1 "github.com/kinderyj/presto-operator/api/v1alpha1"
-	. "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-
-	//v1beta1 "github.com/googlecloudplatform/flink-operator/api/v1beta1"
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-// Converter which converts the FlinkCluster spec to the desired
+// Converter which converts the PrestoCluster spec to the desired
 // underlying Kubernetes resource specs.
-
-const (
-	delayDeleteClusterMinutes int32 = 5
-	flinkConfigMapPath              = "/opt/flink/conf"
-	flinkConfigMapVolume            = "flink-config-volume"
-	gcpServiceAccountVolume         = "gcp-service-account-volume"
-	hadoopConfigVolume              = "hadoop-config-volume"
-)
-
-var flinkSysProps = map[string]struct{}{
-	"jobmanager.rpc.address": {},
-	"jobmanager.rpc.port":    {},
-	"blob.server.port":       {},
-	"query.server.port":      {},
-	"rest.port":              {},
-}
 
 // DesiredClusterState holds desired state of a cluster.
 type DesiredClusterState struct {
@@ -62,7 +40,7 @@ type DesiredClusterState struct {
 	PrestoConfigMap       *corev1.ConfigMap
 	CatalogConfigMap      *corev1.ConfigMap
 	Job                   *batchv1.Job
-	//JmIngress        *extensionsv1beta1.Ingress
+	//CoordinatorIngress        *extensionsv1beta1.Ingress
 }
 
 // Gets the desired state of a cluster.
@@ -78,11 +56,11 @@ func getDesiredClusterState(
 		CoordinatorDeployment: getDesiredCoordinatorDeployment(cluster),
 		CoordinatorService:    getDesiredJobManagerService(cluster),
 		WorkerDeployment:      getDesiredWorkerDeployment(cluster),
-		//JmIngress:        getDesiredJobManagerIngress(cluster),
+		//CoordinatorIngress:        getDesiredJobManagerIngress(cluster),
 	}
 }
 
-// Gets the desired JobManager deployment spec from the FlinkCluster spec.
+// Gets the desired Coordinator deployment spec from the PrestoCluster spec.
 func getDesiredCoordinatorDeployment(
 	prestoCluster *prestooperatorv1alpha1.PrestoCluster) *appsv1.Deployment {
 	labels := map[string]string{
@@ -107,19 +85,19 @@ func getDesiredCoordinatorDeployment(
 			Selector: &metav1.LabelSelector{
 				MatchLabels: labels,
 			},
-			Template: PodTemplateSpec{
+			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: labels,
 				},
-				Spec: PodSpec{
-					Containers: []Container{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
 						{
 							Name:            "presto-coordinator",
 							Resources:       prestoCluster.Spec.CoordinatorConfig.Resources,
 							Image:           prestoCluster.Spec.Image,
-							ImagePullPolicy: PullAlways,
-							Ports:           []ContainerPort{{ContainerPort: 8080}},
-							VolumeMounts: []VolumeMount{
+							ImagePullPolicy: corev1.PullAlways,
+							Ports:           []corev1.ContainerPort{{ContainerPort: 8080}},
+							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      "config",
 									MountPath: "/usr/lib/presto/etc/config.properties",
@@ -168,12 +146,12 @@ func getDesiredCoordinatorDeployment(
 							},
 						},
 					},
-					Volumes: []Volume{
+					Volumes: []corev1.Volume{
 						{
 							Name: "config",
-							VolumeSource: VolumeSource{
-								ConfigMap: &ConfigMapVolumeSource{
-									LocalObjectReference: LocalObjectReference{
+							VolumeSource: corev1.VolumeSource{
+								ConfigMap: &corev1.ConfigMapVolumeSource{
+									LocalObjectReference: corev1.LocalObjectReference{
 										Name: getPrestoConfigMapName(prestoCluster.Name),
 									},
 								},
@@ -181,9 +159,9 @@ func getDesiredCoordinatorDeployment(
 						},
 						{
 							Name: "catalog",
-							VolumeSource: VolumeSource{
-								ConfigMap: &ConfigMapVolumeSource{
-									LocalObjectReference: LocalObjectReference{
+							VolumeSource: corev1.VolumeSource{
+								ConfigMap: &corev1.ConfigMapVolumeSource{
+									LocalObjectReference: corev1.LocalObjectReference{
 										Name: getCatalogConfigMapName(prestoCluster.Name),
 									},
 								},
@@ -208,7 +186,7 @@ func getDesiredJobManagerService(
 		"app":        "presto-coordinator",
 		"controller": prestoCluster.Name,
 	}
-	return &Service{
+	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      prestoCluster.Spec.Name,
 			Namespace: prestoCluster.Namespace,
@@ -221,11 +199,11 @@ func getDesiredJobManagerService(
 			},
 			Labels: labels,
 		},
-		Spec: ServiceSpec{
+		Spec: corev1.ServiceSpec{
 			Selector: selectorLabels,
-			Ports: []ServicePort{
+			Ports: []corev1.ServicePort{
 				{
-					Protocol:   ProtocolTCP,
+					Protocol:   corev1.ProtocolTCP,
 					Port:       8080,
 					TargetPort: intstr.FromInt(8080),
 				},
@@ -234,82 +212,7 @@ func getDesiredJobManagerService(
 	}
 }
 
-// Gets the desired JobManager ingress spec from a cluster spec.
-// func getDesiredJobManagerIngress(
-// 	flinkCluster *v1beta1.FlinkCluster) *extensionsv1beta1.Ingress {
-// 	var jobManagerIngressSpec = flinkCluster.Spec.JobManager.Ingress
-// 	if jobManagerIngressSpec == nil {
-// 		return nil
-// 	}
-
-// 	if shouldCleanup(flinkCluster, "JobManagerIngress") {
-// 		return nil
-// 	}
-
-// 	var clusterNamespace = flinkCluster.ObjectMeta.Namespace
-// 	var clusterName = flinkCluster.ObjectMeta.Name
-// 	var jobManagerServiceName = getJobManagerServiceName(clusterName)
-// 	var jobManagerServiceUIPort = intstr.FromString("ui")
-// 	var ingressName = getJobManagerIngressName(clusterName)
-// 	var ingressAnnotations = jobManagerIngressSpec.Annotations
-// 	var ingressHost string
-// 	var ingressTLS []extensionsv1beta1.IngressTLS
-// 	var labels = map[string]string{
-// 		"cluster":   clusterName,
-// 		"app":       "flink",
-// 		"component": "jobmanager",
-// 	}
-// 	if jobManagerIngressSpec.HostFormat != nil {
-// 		ingressHost = getJobManagerIngressHost(*jobManagerIngressSpec.HostFormat, clusterName)
-// 	}
-// 	if jobManagerIngressSpec.UseTLS != nil && *jobManagerIngressSpec.UseTLS == true {
-// 		var secretName string
-// 		var hosts []string
-// 		if ingressHost != "" {
-// 			hosts = []string{ingressHost}
-// 		}
-// 		if jobManagerIngressSpec.TLSSecretName != nil {
-// 			secretName = *jobManagerIngressSpec.TLSSecretName
-// 		}
-// 		if hosts != nil || secretName != "" {
-// 			ingressTLS = []extensionsv1beta1.IngressTLS{{
-// 				Hosts:      hosts,
-// 				SecretName: secretName,
-// 			}}
-// 		}
-// 	}
-// 	var jobManagerIngress = &extensionsv1beta1.Ingress{
-// 		ObjectMeta: metav1.ObjectMeta{
-// 			Namespace: clusterNamespace,
-// 			Name:      ingressName,
-// 			OwnerReferences: []metav1.OwnerReference{
-// 				toOwnerReference(flinkCluster)},
-// 			Labels:      labels,
-// 			Annotations: ingressAnnotations,
-// 		},
-// 		Spec: extensionsv1beta1.IngressSpec{
-// 			TLS: ingressTLS,
-// 			Rules: []extensionsv1beta1.IngressRule{{
-// 				Host: ingressHost,
-// 				IngressRuleValue: extensionsv1beta1.IngressRuleValue{
-// 					HTTP: &extensionsv1beta1.HTTPIngressRuleValue{
-// 						Paths: []extensionsv1beta1.HTTPIngressPath{{
-// 							Path: "/",
-// 							Backend: extensionsv1beta1.IngressBackend{
-// 								ServiceName: jobManagerServiceName,
-// 								ServicePort: jobManagerServiceUIPort,
-// 							},
-// 						}},
-// 					},
-// 				},
-// 			}},
-// 		},
-// 	}
-
-// 	return jobManagerIngress
-// }
-
-// Gets the desired TaskManager deployment spec from a cluster spec.
+// Gets the desired Worker deployment spec from a cluster spec.
 func getDesiredWorkerDeployment(
 	prestoCluster *prestooperatorv1alpha1.PrestoCluster) *appsv1.Deployment {
 	labels := map[string]string{
@@ -334,19 +237,19 @@ func getDesiredWorkerDeployment(
 			Selector: &metav1.LabelSelector{
 				MatchLabels: labels,
 			},
-			Template: PodTemplateSpec{
+			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: labels,
 				},
-				Spec: PodSpec{
-					Containers: []Container{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
 						{
 							Name:            "presto-worker",
 							Resources:       prestoCluster.Spec.WorkerConfig.Resources,
 							Image:           prestoCluster.Spec.Image,
-							ImagePullPolicy: PullAlways,
-							Ports:           []ContainerPort{{ContainerPort: 8080}},
-							VolumeMounts: []VolumeMount{
+							ImagePullPolicy: corev1.PullAlways,
+							Ports:           []corev1.ContainerPort{{ContainerPort: 8080}},
+							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      "config",
 									MountPath: "/usr/lib/presto/etc/config.properties",
@@ -392,25 +295,31 @@ func getDesiredWorkerDeployment(
 									MountPath: "/tmp/core-site.xml",
 									SubPath:   "core-site.xml",
 								},
+								{
+									Name:      "config",
+									MountPath: "/usr/lib/presto/etc/pre-stop.sh",
+									SubPath:   "pre-stop.sh",
+								},
 							},
-							Lifecycle: &Lifecycle{
+							Lifecycle: &corev1.Lifecycle{
 								PostStart: nil,
-								PreStop: &Handler{
-									Exec: &ExecAction{
-										Command: []string{"/bin/sh", "-c", "curl https://gist.githubusercontent.com/oneonestar/ea75a608d58aa7e40cc952ad20e5a31a/raw/1a0a8591537b6005d4bc0b5ec2ff42db6b709664/presto_shutdown.sh | sh"},
-										// TODO: Migrate to the following command after https://github.com/prestosql/presto/pull/1224 being merged
-										// Command: []string{"/bin/sh", "/usr/lib/presto/bin/stop-presto"},
+								PreStop: &corev1.Handler{
+									Exec: &corev1.ExecAction{
+										Command: []string{"/bin/sh", "/usr/lib/presto/etc/pre-stop.sh"},
+										// TODO: Watch the graceful shutdown feature of presto worker.
+										// If the Presto worker supports graceful shutdown by itself, the PreStop Hook
+										// here should be removed. https://github.com/prestosql/presto/pull/1224
 									},
 								},
 							},
 						},
 					},
-					Volumes: []Volume{
+					Volumes: []corev1.Volume{
 						{
 							Name: "config",
-							VolumeSource: VolumeSource{
-								ConfigMap: &ConfigMapVolumeSource{
-									LocalObjectReference: LocalObjectReference{
+							VolumeSource: corev1.VolumeSource{
+								ConfigMap: &corev1.ConfigMapVolumeSource{
+									LocalObjectReference: corev1.LocalObjectReference{
 										Name: getPrestoConfigMapName(prestoCluster.Name),
 									},
 								},
@@ -418,9 +327,9 @@ func getDesiredWorkerDeployment(
 						},
 						{
 							Name: "catalog",
-							VolumeSource: VolumeSource{
-								ConfigMap: &ConfigMapVolumeSource{
-									LocalObjectReference: LocalObjectReference{
+							VolumeSource: corev1.VolumeSource{
+								ConfigMap: &corev1.ConfigMapVolumeSource{
+									LocalObjectReference: corev1.LocalObjectReference{
 										Name: getCatalogConfigMapName(prestoCluster.Name),
 									},
 								},
@@ -436,7 +345,7 @@ func getDesiredWorkerDeployment(
 
 func newConfigmap(presto *prestooperatorv1alpha1.PrestoCluster, configMapName string, data map[string]string) *v1.ConfigMap {
 	var namespace = presto.Namespace
-	var configMap = &v1.ConfigMap{
+	var configMap = &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: namespace,
 			Name:      configMapName,
@@ -470,8 +379,7 @@ func getDesiredPrestoConfigMap(
 		"query.max-memory":                   prestocluster.Spec.WorkerConfig.MaxMemory,
 		"query.max-memory-per-node":          prestocluster.Spec.WorkerConfig.MaxMemoryPerNode,
 		"query.max-total-memory-per-node":    prestocluster.Spec.WorkerConfig.TotalMemoryPerNode,
-		//"discovery.uri":                      presto.Spec.WorkerConfig.DiscoveryURI,
-		"discovery.uri": "http://" + prestocluster.Name + ":" + prestocluster.Spec.CoordinatorConfig.HTTPServerPort,
+		"discovery.uri":                      "http://" + prestocluster.Name + ":" + prestocluster.Spec.CoordinatorConfig.HTTPServerPort,
 	}
 	var jvmArgs = `-server -Xmx%s -XX:+UseG1GC -XX:G1HeapRegionSize=%s -XX:+UseGCOverheadLimit -XX:+ExplicitGCInvokesConcurrent -XX:+HeapDumpOnOutOfMemoryError -XX:+ExitOnOutOfMemoryError -Djdk.attach.allowAttachSelf=%s`
 	var jvmCoordinator = fmt.Sprintf(jvmArgs,
@@ -482,8 +390,6 @@ func getDesiredPrestoConfigMap(
 		prestocluster.Spec.WorkerConfig.Xmx,
 		prestocluster.Spec.WorkerConfig.G1HeapRegionSize,
 		prestocluster.Spec.WorkerConfig.AllowAttachSelf)
-	//fmt.Printf("jvmCoordinator is %s\n", jvmCoordinator)
-	//fmt.Printf("jvmWorker is %s\n", jvmWorker)
 	var nodeCoordinator = map[string]string{
 		"node.environment": prestocluster.Spec.CoordinatorConfig.Environment,
 		"node.data-dir":    prestocluster.Spec.CoordinatorConfig.DataDir,
@@ -499,12 +405,13 @@ func getDesiredPrestoConfigMap(
 		"jvm.config.worker":             getPropertiesFields(jvmWorker),
 		"node.properties.coordinator":   getProperties(nodeCoordinator),
 		"node.properties.worker":        getProperties(nodeWorker),
+		"pre-stop.sh":                   preStopScript,
 	}
 	var clusterName = prestocluster.Name
 	return newConfigmap(prestocluster, getPrestoConfigMapName(clusterName), data)
 }
 
-// Gets the desired Presto configMap.
+// Gets the desired Catalog configMap.
 func getDesiredCatalogConfigMap(
 	prestocluster *prestooperatorv1alpha1.PrestoCluster) *corev1.ConfigMap {
 	var propertiesJmx = map[string]string{
@@ -551,43 +458,15 @@ func getDesiredCatalogConfigMap(
 
 }
 
-// Converts the FlinkCluster as owner reference for its child resources.
+// Converts the PrestoCluster as owner reference for its child resources.
 func toOwnerReference(
-	flinkCluster *prestooperatorv1alpha1.PrestoCluster) metav1.OwnerReference {
+	prestoCluster *prestooperatorv1alpha1.PrestoCluster) metav1.OwnerReference {
 	return metav1.OwnerReference{
-		APIVersion:         flinkCluster.APIVersion,
-		Kind:               flinkCluster.Kind,
-		Name:               flinkCluster.Name,
-		UID:                flinkCluster.UID,
+		APIVersion:         prestoCluster.APIVersion,
+		Kind:               prestoCluster.Kind,
+		Name:               prestoCluster.Name,
+		UID:                prestoCluster.UID,
 		Controller:         &[]bool{true}[0],
 		BlockOwnerDeletion: &[]bool{false}[0],
 	}
-}
-
-var jobManagerIngressHostRegex = regexp.MustCompile("{{\\s*[$]clusterName\\s*}}")
-
-func getJobManagerIngressHost(ingressHostFormat string, clusterName string) string {
-	// TODO: Validating webhook should verify hostFormat
-	return jobManagerIngressHostRegex.ReplaceAllString(ingressHostFormat, clusterName)
-}
-
-// Converts memory value to the format of divisor and returns ceiling of the value.
-func convertResourceMemoryToInt64(memory resource.Quantity, divisor resource.Quantity) int64 {
-	return int64(math.Ceil(float64(memory.Value()) / float64(divisor.Value())))
-}
-
-// Calculate heap size in MB
-func calHeapSize(memSize int64, offHeapMin int64, offHeapRatio int64) int64 {
-	var heapSizeMB int64
-	offHeapSize := int64(math.Ceil(float64(memSize*offHeapRatio) / 100))
-	if offHeapSize < offHeapMin {
-		offHeapSize = offHeapMin
-	}
-	heapSizeCalculated := memSize - offHeapSize
-	if heapSizeCalculated > 0 {
-		divisor := resource.MustParse("1M")
-		heapSizeQuantity := resource.NewQuantity(heapSizeCalculated, resource.DecimalSI)
-		heapSizeMB = convertResourceMemoryToInt64(*heapSizeQuantity, divisor)
-	}
-	return heapSizeMB
 }

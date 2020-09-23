@@ -1,5 +1,5 @@
 /*
-Copyright 2019 Google LLC.
+Copyright 2020 yujunwang.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"k8s.io/apimachinery/pkg/types"
@@ -33,7 +34,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// ClusterStatusUpdater updates the status of the FlinkCluster CR.
+// ClusterStatusUpdater updates the status of the PrestoCluster CR.
 type ClusterStatusUpdater struct {
 	k8sClient client.Client
 	context   context.Context
@@ -41,17 +42,6 @@ type ClusterStatusUpdater struct {
 	recorder  record.EventRecorder
 	observed  ObservedClusterState
 }
-
-// func (updater *ClusterStatusUpdater) updateClusterStatus(
-// 	//status prestooperatorv1alpha1.PrestoClusterStatus) error {
-// 	availableWorkers int32) error {
-// 	var cluster = prestooperatorv1alpha1.PrestoCluster{}
-// 	updater.observed.cluster.DeepCopyInto(&cluster)
-// 	fmt.Printf("%#v\n", cluster)
-// 	cluster.Status.AvailableWorkers = availableWorkers
-// 	//return updater.k8sClient.Update(updater.context, &cluster)
-// 	return updater.k8sClient.Status().Update(updater.context, &cluster)
-// }
 
 func (updater *ClusterStatusUpdater) updateClusterStatus(
 	status prestooperatorv1alpha1.PrestoClusterStatus) error {
@@ -101,9 +91,19 @@ func (updater *ClusterStatusUpdater) deriveClusterStatus(
 func (updater *ClusterStatusUpdater) updatePrestoClusterStatus(name, namespace string) (ctrl.Result, error) {
 
 	var newStatus = updater.deriveClusterStatus(name, namespace)
-	err := updater.updateClusterStatus(newStatus)
-	if err != nil {
-		return ctrl.Result{}, err
+	var oldStatus = updater.observed.cluster.Status
+	if newStatus.AvailableWorkers != oldStatus.AvailableWorkers {
+		err := updater.updateClusterStatus(newStatus)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+		updater.recorder.Event(
+			updater.observed.cluster,
+			"Normal",
+			"workers counts update",
+			fmt.Sprintf(
+				"%v workers counts changed: %v -> %v", name, oldStatus.AvailableWorkers, newStatus.AvailableWorkers))
+
 	}
 	if newStatus.AvailableWorkers != *updater.observed.cluster.Spec.Workers {
 		return ctrl.Result{RequeueAfter: 5 * time.Second, Requeue: true}, nil

@@ -39,9 +39,8 @@ spec:
           description: PrestoClusterSpec defines the desired state of PrestoCluster
           properties:
             catalogConfig:
+              description: CatalogConfig defines the presto catolog config.
               properties:
-                configmapName:
-                  type: string
                 fs.cosn.bucket.region:
                   type: string
                 fs.cosn.userinfo.secretId:
@@ -55,7 +54,6 @@ spec:
                 hiveMetastorePort:
                   type: string
               required:
-              - configmapName
               - fs.cosn.bucket.region
               - fs.cosn.userinfo.secretId
               - fs.cosn.userinfo.secretKey
@@ -64,6 +62,7 @@ spec:
               - hiveMetastorePort
               type: object
             coordinatorConfig:
+              description: CoordinatorConfig defines the coordinator config
               properties:
                 allowAttachSelf:
                   type: string
@@ -71,6 +70,10 @@ spec:
                   type: string
                 discoveryURI:
                   type: string
+                dynamicArgs:
+                  items:
+                    type: string
+                  type: array
                 environment:
                   type: string
                 g1HeapRegionSize:
@@ -82,9 +85,9 @@ spec:
                 maxMemoryPerNode:
                   type: string
                 resources:
-                  description: 'Name               string `json:"name"` Compute resources
-                    required by each Coordinator container. If omitted, a default
-                    value will be used. Cannot be updated. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                  description: 'Compute resources required by each Coordinator container.
+                    If omitted, a default value will be used. Cannot be updated. More
+                    info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                   properties:
                     limits:
                       additionalProperties:
@@ -111,6 +114,8 @@ spec:
                   type: object
                 scaleWriters:
                   type: string
+                spillEnabled:
+                  type: string
                 totalMemoryPerNode:
                   type: string
                 writerMinSize:
@@ -118,17 +123,12 @@ spec:
                 xmx:
                   type: string
               required:
-              - allowAttachSelf
               - dataDir
               - discoveryURI
-              - environment
-              - g1HeapRegionSize
               - httpServerPort
               - maxMemory
               - maxMemoryPerNode
-              - scaleWriters
               - totalMemoryPerNode
-              - writerMinSize
               - xmx
               type: object
             image:
@@ -137,19 +137,17 @@ spec:
               description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
                 Important: Run "make" to regenerate code after modifying this file'
               type: string
-            prestoConfig:
-              properties:
-                configmapName:
-                  type: string
-              required:
-              - configmapName
-              type: object
             workerConfig:
+              description: WorkerConfig defines the worker config.
               properties:
                 allowAttachSelf:
                   type: string
                 dataDir:
                   type: string
+                dynamicArgs:
+                  items:
+                    type: string
+                  type: array
                 environment:
                   type: string
                 g1HeapRegionSize:
@@ -161,9 +159,8 @@ spec:
                 maxMemoryPerNode:
                   type: string
                 resources:
-                  description: Name               string `json:"name"` Compute resources
-                    required by each Worker container. If omitted, a default value
-                    will be used. Cannot be updated.
+                  description: ResourceRequirements describes the compute resource
+                    requirements.
                   properties:
                     limits:
                       additionalProperties:
@@ -191,7 +188,6 @@ spec:
                 totalMemoryPerNode:
                   type: string
                 xmx:
-                  description: DiscoveryURI       string                      `json:"discoveryURI"`
                   type: string
               required:
               - allowAttachSelf
@@ -212,7 +208,6 @@ spec:
           - coordinatorConfig
           - image
           - name
-          - prestoConfig
           - workerConfig
           - workers
           type: object

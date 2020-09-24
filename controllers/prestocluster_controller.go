@@ -54,8 +54,6 @@ type PrestoClusterReconciler struct {
 func (r *PrestoClusterReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	_ = context.Background()
 	_ = r.Log.WithValues("prestocluster", req.NamespacedName)
-
-	// your logic here
 	var log = r.Log.WithValues(
 		"cluster", req.NamespacedName)
 	var handler = PrestoClusterHandler{

@@ -17,6 +17,7 @@ limitations under the License.
 package controllers
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -92,4 +93,15 @@ func getPodsPrefix(controllerName string) string {
 		prefix = controllerName
 	}
 	return prefix
+}
+
+func splitDanamicArgs(argsKeyValues string) (argsKey, argsValue string, err error) {
+	splited := strings.Split(argsKeyValues, "=")
+	if len(splited) != 2 {
+		var err = errors.New("danamic args key values format error")
+		return "", "", err
+	}
+	argsKey = splited[0]
+	argsValue = splited[1]
+	return
 }

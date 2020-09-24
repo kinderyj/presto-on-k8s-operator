@@ -34,11 +34,10 @@ type PrestoClusterSpec struct {
 	CoordinatorConfig CoordinatorConfig `json:"coordinatorConfig"`
 	WorkerConfig      WorkerConfig      `json:"workerConfig"`
 	CatalogConfig     CatalogConfig     `json:"catalogConfig"`
-	PrestoConfig      PrestoConfig      `json:"prestoConfig"`
 }
 
+// CatalogConfig defines the presto catolog config.
 type CatalogConfig struct {
-	ConfigMapName     string `json:"configmapName"`
 	FsDefaultFS       string `json:"fs.defaultFS"`
 	CosnSecretID      string `json:"fs.cosn.userinfo.secretId"`
 	CosnSecretKey     string `json:"fs.cosn.userinfo.secretKey"`
@@ -47,12 +46,8 @@ type CatalogConfig struct {
 	HiveMetastorePort string `json:"hiveMetastorePort"`
 }
 
-type PrestoConfig struct {
-	ConfigMapName string `json:"configmapName"`
-}
-
+// CoordinatorConfig defines the coordinator config
 type CoordinatorConfig struct {
-	//Name               string `json:"name"`
 	// Compute resources required by each Coordinator container.
 	// If omitted, a default value will be used.
 	// Cannot be updated.
@@ -64,45 +59,30 @@ type CoordinatorConfig struct {
 	TotalMemoryPerNode string                      `json:"totalMemoryPerNode"`
 	DiscoveryURI       string                      `json:"discoveryURI"`
 	Xmx                string                      `json:"xmx"`
-	G1HeapRegionSize   string                      `json:"g1HeapRegionSize"`
-	AllowAttachSelf    string                      `json:"allowAttachSelf"`
-	Environment        string                      `json:"environment"`
+	G1HeapRegionSize   string                      `json:"g1HeapRegionSize,omitempty"`
+	AllowAttachSelf    string                      `json:"allowAttachSelf,omitempty"`
+	Environment        string                      `json:"environment,omitempty"`
 	DataDir            string                      `json:"dataDir"`
-	ScaleWriters       string                      `json:"scaleWriters"`
-	WriterMinSize      string                      `json:"writerMinSize"`
+	ScaleWriters       string                      `json:"scaleWriters,omitempty"`
+	WriterMinSize      string                      `json:"writerMinSize,omitempty"`
+	SpillEnabled       string                      `json:"spillEnabled,omitempty"`
+	DynamicArgs        []string                    `json:"dynamicArgs,omitempty"`
 }
 
+// WorkerConfig defines the worker config.
 type WorkerConfig struct {
-	//Name               string `json:"name"`
-	// Compute resources required by each Worker container.
-	// If omitted, a default value will be used.
-	// Cannot be updated.
 	Resources          corev1.ResourceRequirements `json:"resources,omitempty"`
 	HTTPServerPort     string                      `json:"httpServerPort"`
 	MaxMemory          string                      `json:"maxMemory"`
 	MaxMemoryPerNode   string                      `json:"maxMemoryPerNode"`
 	TotalMemoryPerNode string                      `json:"totalMemoryPerNode"`
-	//DiscoveryURI       string                      `json:"discoveryURI"`
-	Xmx              string `json:"xmx"`
-	G1HeapRegionSize string `json:"g1HeapRegionSize"`
-	AllowAttachSelf  string `json:"allowAttachSelf"`
-	Environment      string `json:"environment"`
-	DataDir          string `json:"dataDir"`
+	Xmx                string                      `json:"xmx"`
+	G1HeapRegionSize   string                      `json:"g1HeapRegionSize"`
+	AllowAttachSelf    string                      `json:"allowAttachSelf"`
+	Environment        string                      `json:"environment"`
+	DataDir            string                      `json:"dataDir"`
+	DynamicArgs        []string                    `json:"dynamicArgs,omitempty"`
 }
-
-// type PrestoConfig struct {
-// 	Name               string `json:"name"`
-// 	HTTPServerPort     string `json:"httpServerPort"`
-// 	MaxMemory          string `json:"maxMemory"`
-// 	MaxMemoryPerNode   string `json:"maxMemoryPerNode"`
-// 	TotalMemoryPerNode string `json:"totalMemoryPerNode"`
-// 	DiscoveryURI       string `json:"discoveryURI"`
-// 	Xmx                string `json:"xmx"`
-// 	G1HeapRegionSize   string `json:"g1HeapRegionSize"`
-// 	AllowAttachSelf    string `json:"allowAttachSelf"`
-// 	Environment        string `json:"environment"`
-// 	DataDir            string `json:"dataDir"`
-// }
 
 // PrestoClusterStatus defines the observed state of PrestoCluster
 type PrestoClusterStatus struct {

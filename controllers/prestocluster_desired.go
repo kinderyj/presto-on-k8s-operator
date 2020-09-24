@@ -371,6 +371,16 @@ func getDesiredPrestoConfigMap(
 		"discovery.uri":                      prestocluster.Spec.CoordinatorConfig.DiscoveryURI,
 		"scale-writers":                      prestocluster.Spec.CoordinatorConfig.ScaleWriters,
 		"writer-min-size":                    prestocluster.Spec.CoordinatorConfig.WriterMinSize,
+		"spill-enabled":                      prestocluster.Spec.CoordinatorConfig.SpillEnabled,
+	}
+	var dynamicArgsCoordinator = prestocluster.Spec.CoordinatorConfig.DynamicArgs
+	for _, argsKeyValue := range dynamicArgsCoordinator {
+		key, value, err := splitDanamicArgs(argsKeyValue)
+		if err != nil {
+			fmt.Printf("split DanamicArgs error for argsKeyValue %s, err: %v", argsKeyValue, err)
+			continue
+		}
+		propertiesCoordinator[key] = value
 	}
 	var propertiesWorker = map[string]string{
 		"coordinator":                        "false",

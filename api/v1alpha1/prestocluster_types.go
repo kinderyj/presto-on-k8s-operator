@@ -67,6 +67,7 @@ type CoordinatorConfig struct {
 	WriterMinSize      string                      `json:"writerMinSize,omitempty"`
 	SpillEnabled       string                      `json:"spillEnabled,omitempty"`
 	DynamicArgs        []string                    `json:"dynamicArgs,omitempty"`
+	SpillerSpillPath   string                      `json:"spillerSpillPath,omitempty"`
 }
 
 // WorkerConfig defines the worker config.

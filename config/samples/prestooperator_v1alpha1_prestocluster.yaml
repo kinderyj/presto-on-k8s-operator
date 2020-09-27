@@ -5,7 +5,7 @@ metadata:
   #namespace: prestonew
 spec:
   name: presto-test-cluster
-  image: prestosql/presto:316
+  image: dlc2020tencent/dlc:v2
   workers: 2
   test: test
   coordinatorConfig:
@@ -30,8 +30,7 @@ spec:
     writerMinSize: 32MB
     spillEnabled: "false"
     dynamicArgs:
-    - "newArgsFirst=FirstValue"
-    - "newArgsSecond=SecondValue"
+    - "spiller-spill-path=/tmp"
   workerConfig: 
     resources:
       requests:

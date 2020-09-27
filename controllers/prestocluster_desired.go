@@ -372,6 +372,7 @@ func getDesiredPrestoConfigMap(
 		"scale-writers":                      prestocluster.Spec.CoordinatorConfig.ScaleWriters,
 		"writer-min-size":                    prestocluster.Spec.CoordinatorConfig.WriterMinSize,
 		"spill-enabled":                      prestocluster.Spec.CoordinatorConfig.SpillEnabled,
+		"spiller-spill-path":                 prestocluster.Spec.CoordinatorConfig.SpillerSpillPath,
 	}
 	var dynamicArgsCoordinator = prestocluster.Spec.CoordinatorConfig.DynamicArgs
 	for _, argsKeyValue := range dynamicArgsCoordinator {

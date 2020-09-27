@@ -116,6 +116,8 @@ spec:
                   type: string
                 spillEnabled:
                   type: string
+                spillerSpillPath:
+                  type: string
                 totalMemoryPerNode:
                   type: string
                 writerMinSize:

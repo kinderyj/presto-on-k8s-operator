@@ -62,5 +62,9 @@ spec:
     fs.cosn.userinfo.secretKey: "your-secretKey"
     fs.cosn.bucket.region: "ap-guangzhou"
     hiveMetastoreIP: "10.31.0.11"
-    hiveMetastorePort: "9083" 
+    hiveMetastorePort: "9083"
+    dynamicConfigs:
+    - "configname001:key1=value1;key2=value2;key3=value3"
+    - "configname001:key4=value4;key5=value5;key6=value6"
+    - "configname002:key1=value1;key2=value2;key3=value3"
 

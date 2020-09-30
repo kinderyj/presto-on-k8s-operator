@@ -67,6 +67,75 @@ func getDesiredCoordinatorDeployment(
 		"app":        "presto-coordinator",
 		"controller": prestoCluster.Name,
 	}
+	var volumeMounts = []corev1.VolumeMount{
+		{
+			Name:      "config",
+			MountPath: "/usr/lib/presto/etc/config.properties",
+			SubPath:   "config.properties.coordinator",
+		},
+		{
+			Name:      "config",
+			MountPath: "/usr/lib/presto/etc/jvm.config",
+			SubPath:   "jvm.config.coordinator",
+		},
+		{
+			Name:      "config",
+			MountPath: "/usr/lib/presto/etc/node.properties",
+			SubPath:   "node.properties.coordinator",
+		},
+		{
+			Name:      "catalog",
+			MountPath: "/usr/lib/presto/etc/catalog/hive.properties",
+			SubPath:   "hive.properties",
+		},
+		{
+			Name:      "catalog",
+			MountPath: "/usr/lib/presto/etc/catalog/jmx.properties",
+			SubPath:   "jmx.properties",
+		},
+		{
+			Name:      "catalog",
+			MountPath: "/usr/lib/presto/etc/catalog/memory.properties",
+			SubPath:   "memory.properties",
+		},
+		{
+			Name:      "catalog",
+			MountPath: "/usr/lib/presto/etc/catalog/tpcds.properties",
+			SubPath:   "tpcds.properties",
+		},
+		{
+			Name:      "catalog",
+			MountPath: "/usr/lib/presto/etc/catalog/tpch.properties",
+			SubPath:   "tpch.properties",
+		},
+		{
+			Name:      "catalog",
+			MountPath: "/tmp/core-site.xml",
+			SubPath:   "core-site.xml",
+		},
+	}
+	danamicConfigs := prestoCluster.Spec.CatalogConfig.DynamicConfigs
+	var configNameChecker = map[string]string{}
+	if len(danamicConfigs) > 0 {
+		for _, value := range danamicConfigs {
+			configName, _, err := splitDanamicConfigs(value)
+			if err != nil {
+				fmt.Printf("Failed to get configname from splitDanamicConfigs for value: %s, err: %v\n", value, err)
+				continue
+			}
+			if _, exist := configNameChecker[configName]; exist {
+				continue
+			}
+			configNameChecker[configName] = ""
+			var danamicConfig = corev1.VolumeMount{
+				Name:      "catalog",
+				MountPath: "/usr/lib/presto/etc/catalog/" + configName,
+				SubPath:   configName,
+			}
+			volumeMounts = append(volumeMounts, danamicConfig)
+		}
+
+	}
 	var coordinatorDeployment = &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: prestoCluster.Namespace,
@@ -97,53 +166,7 @@ func getDesiredCoordinatorDeployment(
 							Image:           prestoCluster.Spec.Image,
 							ImagePullPolicy: corev1.PullAlways,
 							Ports:           []corev1.ContainerPort{{ContainerPort: 8080}},
-							VolumeMounts: []corev1.VolumeMount{
-								{
-									Name:      "config",
-									MountPath: "/usr/lib/presto/etc/config.properties",
-									SubPath:   "config.properties.coordinator",
-								},
-								{
-									Name:      "config",
-									MountPath: "/usr/lib/presto/etc/jvm.config",
-									SubPath:   "jvm.config.coordinator",
-								},
-								{
-									Name:      "config",
-									MountPath: "/usr/lib/presto/etc/node.properties",
-									SubPath:   "node.properties.coordinator",
-								},
-								{
-									Name:      "catalog",
-									MountPath: "/usr/lib/presto/etc/catalog/hive.properties",
-									SubPath:   "hive.properties",
-								},
-								{
-									Name:      "catalog",
-									MountPath: "/usr/lib/presto/etc/catalog/jmx.properties",
-									SubPath:   "jmx.properties",
-								},
-								{
-									Name:      "catalog",
-									MountPath: "/usr/lib/presto/etc/catalog/memory.properties",
-									SubPath:   "memory.properties",
-								},
-								{
-									Name:      "catalog",
-									MountPath: "/usr/lib/presto/etc/catalog/tpcds.properties",
-									SubPath:   "tpcds.properties",
-								},
-								{
-									Name:      "catalog",
-									MountPath: "/usr/lib/presto/etc/catalog/tpch.properties",
-									SubPath:   "tpch.properties",
-								},
-								{
-									Name:      "catalog",
-									MountPath: "/tmp/core-site.xml",
-									SubPath:   "core-site.xml",
-								},
-							},
+							VolumeMounts:    volumeMounts,
 						},
 					},
 					Volumes: []corev1.Volume{
@@ -219,6 +242,80 @@ func getDesiredWorkerDeployment(
 		"app":        "presto-worker",
 		"controller": prestoCluster.Name,
 	}
+	var volumeMounts = []corev1.VolumeMount{
+		{
+			Name:      "config",
+			MountPath: "/usr/lib/presto/etc/config.properties",
+			SubPath:   "config.properties.worker",
+		},
+		{
+			Name:      "config",
+			MountPath: "/usr/lib/presto/etc/jvm.config",
+			SubPath:   "jvm.config.worker",
+		},
+		{
+			Name:      "config",
+			MountPath: "/usr/lib/presto/etc/node.properties",
+			SubPath:   "node.properties.worker",
+		},
+		{
+			Name:      "catalog",
+			MountPath: "/usr/lib/presto/etc/catalog/hive.properties",
+			SubPath:   "hive.properties",
+		},
+		{
+			Name:      "catalog",
+			MountPath: "/usr/lib/presto/etc/catalog/jmx.properties",
+			SubPath:   "jmx.properties",
+		},
+		{
+			Name:      "catalog",
+			MountPath: "/usr/lib/presto/etc/catalog/memory.properties",
+			SubPath:   "memory.properties",
+		},
+		{
+			Name:      "catalog",
+			MountPath: "/usr/lib/presto/etc/catalog/tpcds.properties",
+			SubPath:   "tpcds.properties",
+		},
+		{
+			Name:      "catalog",
+			MountPath: "/usr/lib/presto/etc/catalog/tpch.properties",
+			SubPath:   "tpch.properties",
+		},
+		{
+			Name:      "catalog",
+			MountPath: "/tmp/core-site.xml",
+			SubPath:   "core-site.xml",
+		},
+		{
+			Name:      "config",
+			MountPath: "/usr/lib/presto/etc/pre-stop.sh",
+			SubPath:   "pre-stop.sh",
+		},
+	}
+	danamicConfigs := prestoCluster.Spec.CatalogConfig.DynamicConfigs
+	var configNameChecker = map[string]string{}
+	if len(danamicConfigs) > 0 {
+		for _, value := range danamicConfigs {
+			configName, _, err := splitDanamicConfigs(value)
+			if err != nil {
+				fmt.Printf("Failed to get configname from splitDanamicConfigs for value: %s, err: %v\n", value, err)
+				continue
+			}
+			if _, exist := configNameChecker[configName]; exist {
+				continue
+			}
+			configNameChecker[configName] = ""
+			var danamicConfig = corev1.VolumeMount{
+				Name:      "catalog",
+				MountPath: "/usr/lib/presto/etc/catalog/" + configName,
+				SubPath:   configName,
+			}
+			volumeMounts = append(volumeMounts, danamicConfig)
+		}
+
+	}
 	var coordinatorDeployment = &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: prestoCluster.Namespace,
@@ -249,58 +346,7 @@ func getDesiredWorkerDeployment(
 							Image:           prestoCluster.Spec.Image,
 							ImagePullPolicy: corev1.PullAlways,
 							Ports:           []corev1.ContainerPort{{ContainerPort: 8080}},
-							VolumeMounts: []corev1.VolumeMount{
-								{
-									Name:      "config",
-									MountPath: "/usr/lib/presto/etc/config.properties",
-									SubPath:   "config.properties.worker",
-								},
-								{
-									Name:      "config",
-									MountPath: "/usr/lib/presto/etc/jvm.config",
-									SubPath:   "jvm.config.worker",
-								},
-								{
-									Name:      "config",
-									MountPath: "/usr/lib/presto/etc/node.properties",
-									SubPath:   "node.properties.worker",
-								},
-								{
-									Name:      "catalog",
-									MountPath: "/usr/lib/presto/etc/catalog/hive.properties",
-									SubPath:   "hive.properties",
-								},
-								{
-									Name:      "catalog",
-									MountPath: "/usr/lib/presto/etc/catalog/jmx.properties",
-									SubPath:   "jmx.properties",
-								},
-								{
-									Name:      "catalog",
-									MountPath: "/usr/lib/presto/etc/catalog/memory.properties",
-									SubPath:   "memory.properties",
-								},
-								{
-									Name:      "catalog",
-									MountPath: "/usr/lib/presto/etc/catalog/tpcds.properties",
-									SubPath:   "tpcds.properties",
-								},
-								{
-									Name:      "catalog",
-									MountPath: "/usr/lib/presto/etc/catalog/tpch.properties",
-									SubPath:   "tpch.properties",
-								},
-								{
-									Name:      "catalog",
-									MountPath: "/tmp/core-site.xml",
-									SubPath:   "core-site.xml",
-								},
-								{
-									Name:      "config",
-									MountPath: "/usr/lib/presto/etc/pre-stop.sh",
-									SubPath:   "pre-stop.sh",
-								},
-							},
+							VolumeMounts:    volumeMounts,
 							Lifecycle: &corev1.Lifecycle{
 								PostStart: nil,
 								PreStop: &corev1.Handler{
@@ -480,6 +526,34 @@ func getDesiredCatalogConfigMap(
 		"hive.properties":   getProperties(propertiesHive),
 		"core-site.xml":     getPropertiesStrings(coresite),
 	}
+	// dynimic config name
+	dynamicConfigs := prestocluster.Spec.CatalogConfig.DynamicConfigs
+	for _, dynamicConfig := range dynamicConfigs {
+		configName, configValue, err := splitDanamicConfigs(dynamicConfig)
+		if err != nil {
+			fmt.Printf("Failed to convert dynamicConfig for %s, err: %v", dynamicConfig, err)
+			continue
+		}
+		danamicConfigsArgs := splitDanamicConfigsArgs(configValue)
+		if len(danamicConfigsArgs) == 0 {
+			continue
+		}
+		var dynamicArgs = map[string]string{}
+		for _, danamicConfigsArg := range danamicConfigsArgs {
+			argsKey, argsValue, err := splitDanamicArgs(danamicConfigsArg)
+			if err != nil {
+				fmt.Printf("Failed to convert args for dynamicConfig %s, err: %v", dynamicConfig, err)
+				continue
+			}
+			dynamicArgs[argsKey] = argsValue
+		}
+		if value, exist := data[configName]; exist {
+			data[configName] = getProperties(dynamicArgs) + value
+		} else {
+			data[configName] = getProperties(dynamicArgs)
+		}
+	}
+
 	var clusterName = prestocluster.Name
 	return newConfigmap(prestocluster, getCatalogConfigMapName(clusterName), data)
 

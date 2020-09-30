@@ -105,3 +105,19 @@ func splitDanamicArgs(argsKeyValues string) (argsKey, argsValue string, err erro
 	argsValue = splited[1]
 	return
 }
+
+func splitDanamicConfigs(argsKeyValues string) (configKey, configValue string, err error) {
+	splited := strings.Split(argsKeyValues, ":")
+	if len(splited) != 2 {
+		var err = errors.New("danamic configs format error")
+		return "", "", err
+	}
+	configKey = splited[0]
+	configValue = splited[1]
+	return
+}
+
+func splitDanamicConfigsArgs(argsKeyValues string) []string {
+	splited := strings.Split(argsKeyValues, ";")
+	return splited
+}

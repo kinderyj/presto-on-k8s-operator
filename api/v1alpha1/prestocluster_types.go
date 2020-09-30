@@ -38,12 +38,13 @@ type PrestoClusterSpec struct {
 
 // CatalogConfig defines the presto catolog config.
 type CatalogConfig struct {
-	FsDefaultFS       string `json:"fs.defaultFS"`
-	CosnSecretID      string `json:"fs.cosn.userinfo.secretId"`
-	CosnSecretKey     string `json:"fs.cosn.userinfo.secretKey"`
-	CosnRegion        string `json:"fs.cosn.bucket.region"`
-	HiveMetastoreIP   string `json:"hiveMetastoreIP"`
-	HiveMetastorePort string `json:"hiveMetastorePort"`
+	FsDefaultFS       string   `json:"fs.defaultFS"`
+	CosnSecretID      string   `json:"fs.cosn.userinfo.secretId"`
+	CosnSecretKey     string   `json:"fs.cosn.userinfo.secretKey"`
+	CosnRegion        string   `json:"fs.cosn.bucket.region"`
+	HiveMetastoreIP   string   `json:"hiveMetastoreIP"`
+	HiveMetastorePort string   `json:"hiveMetastorePort"`
+	DynamicConfigs    []string `json:"dynamicConfigs,omitempty"`
 }
 
 // CoordinatorConfig defines the coordinator config

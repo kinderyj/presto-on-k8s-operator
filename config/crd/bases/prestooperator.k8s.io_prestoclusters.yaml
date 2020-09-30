@@ -41,6 +41,10 @@ spec:
             catalogConfig:
               description: CatalogConfig defines the presto catolog config.
               properties:
+                dynamicConfigs:
+                  items:
+                    type: string
+                  type: array
                 fs.cosn.bucket.region:
                   type: string
                 fs.cosn.userinfo.secretId:

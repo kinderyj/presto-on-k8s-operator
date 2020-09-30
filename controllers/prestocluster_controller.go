@@ -122,11 +122,6 @@ func (handler *PrestoClusterHandler) reconcile(
 	} else {
 		log.Info("Desired state", "Coordinator service", "nil")
 	}
-	// if desired.JmIngress != nil {
-	// 	log.Info("Desired state", "JobManager ingress", *desired.JmIngress)
-	// } else {
-	// 	log.Info("Desired state", "JobManager ingress", "nil")
-	// }
 	if desired.WorkerDeployment != nil {
 		log.Info("Desired state", "Worker deployment", *desired.WorkerDeployment)
 	} else {

@@ -54,9 +54,8 @@ func getDesiredClusterState(
 		PrestoConfigMap:       getDesiredPrestoConfigMap(cluster),
 		CatalogConfigMap:      getDesiredCatalogConfigMap(cluster),
 		CoordinatorDeployment: getDesiredCoordinatorDeployment(cluster),
-		CoordinatorService:    getDesiredJobManagerService(cluster),
+		CoordinatorService:    getDesiredCoordinatorService(cluster),
 		WorkerDeployment:      getDesiredWorkerDeployment(cluster),
-		//CoordinatorIngress:        getDesiredJobManagerIngress(cluster),
 	}
 }
 
@@ -198,8 +197,8 @@ func getDesiredCoordinatorDeployment(
 	return coordinatorDeployment
 }
 
-// Gets the desired JobManager service spec from a cluster spec.
-func getDesiredJobManagerService(
+// Gets the desired Coordinator service spec from a cluster spec.
+func getDesiredCoordinatorService(
 	prestoCluster *prestooperatorv1alpha1.PrestoCluster) *corev1.Service {
 	labels := map[string]string{
 		"app":        "presto-coordinator-service",

@@ -43,8 +43,7 @@ type ObservedClusterState struct {
 	catalogConfigMap      *corev1.ConfigMap
 	coordinatorDeployment *appsv1.Deployment
 	coordinatorService    *corev1.Service
-	//jmIngress          *extensionsv1beta1.Ingress
-	workerDeployment *appsv1.Deployment
+	workerDeployment      *appsv1.Deployment
 }
 
 // Observes the state of the cluster and its components.
@@ -100,48 +99,48 @@ func (observer *ClusterStateObserver) observe(
 		observed.prestoConfigMap = observedPrestoConfigMap
 	}
 
-	// JobManager deployment.
+	// Coordiator deployment.
 	var observedCoordiatorDeployment = new(appsv1.Deployment)
 	err = observer.observeCoordiatorDeployment(observedCoordiatorDeployment)
 	if err != nil {
 		if client.IgnoreNotFound(err) != nil {
-			log.Error(err, "Failed to get JobManager deployment")
+			log.Error(err, "Failed to get Coordiator deployment")
 			return err
 		}
-		log.Info("Observed JobManager deployment", "state", "nil")
+		log.Info("Observed Coordiator deployment", "state", "nil")
 		observedCoordiatorDeployment = nil
 	} else {
-		log.Info("Observed JobManager deployment", "state", *observedCoordiatorDeployment)
+		log.Info("Observed Coordiator deployment", "state", *observedCoordiatorDeployment)
 		observed.coordinatorDeployment = observedCoordiatorDeployment
 	}
 
-	// JobManager service.
-	var observedJmService = new(corev1.Service)
-	err = observer.observeJobManagerService(observedJmService)
+	// Coordiator service.
+	var observedCoordiatorService = new(corev1.Service)
+	err = observer.observeCoordinatorService(observedCoordiatorService)
 	if err != nil {
 		if client.IgnoreNotFound(err) != nil {
-			log.Error(err, "Failed to get JobManager service")
+			log.Error(err, "Failed to get Presto service")
 			return err
 		}
-		log.Info("Observed JobManager service", "state", "nil")
-		observedJmService = nil
+		log.Info("Observed Presto service", "state", "nil")
+		observedCoordiatorService = nil
 	} else {
-		log.Info("Observed JobManager service", "state", *observedJmService)
-		observed.coordinatorService = observedJmService
+		log.Info("Observed Presto service", "state", *observedCoordiatorService)
+		observed.coordinatorService = observedCoordiatorService
 	}
-	// TaskManager deployment.
-	var observedTmDeployment = new(appsv1.Deployment)
-	err = observer.observeTaskManagerDeployment(observedTmDeployment)
+	// Worker deployment.
+	var observedWorkerDeployment = new(appsv1.Deployment)
+	err = observer.observeWorkerDeployment(observedWorkerDeployment)
 	if err != nil {
 		if client.IgnoreNotFound(err) != nil {
-			log.Error(err, "Failed to get TaskManager deployment")
+			log.Error(err, "Failed to get Worker deployment")
 			return err
 		}
-		log.Info("Observed TaskManager deployment", "state", "nil")
-		observedTmDeployment = nil
+		log.Info("Observed Worker deployment", "state", "nil")
+		observedWorkerDeployment = nil
 	} else {
-		log.Info("Observed TaskManager deployment", "state", *observedTmDeployment)
-		observed.workerDeployment = observedTmDeployment
+		log.Info("Observed Worker deployment", "state", *observedWorkerDeployment)
+		observed.workerDeployment = observedWorkerDeployment
 	}
 	return nil
 }
@@ -174,7 +173,7 @@ func (observer *ClusterStateObserver) observeCoordiatorDeployment(
 		clusterNamespace, coordinatorDeploymentName, "coordinator", observedDeployment)
 }
 
-func (observer *ClusterStateObserver) observeTaskManagerDeployment(
+func (observer *ClusterStateObserver) observeWorkerDeployment(
 	observedDeployment *appsv1.Deployment) error {
 	var clusterNamespace = observer.request.Namespace
 	var clusterName = observer.request.Name
@@ -206,7 +205,7 @@ func (observer *ClusterStateObserver) observeDeployment(
 	return err
 }
 
-func (observer *ClusterStateObserver) observeJobManagerService(
+func (observer *ClusterStateObserver) observeCoordinatorService(
 	observedService *corev1.Service) error {
 	var clusterNamespace = observer.request.Namespace
 	var clusterName = observer.request.Name

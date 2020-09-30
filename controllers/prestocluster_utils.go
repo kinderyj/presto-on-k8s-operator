@@ -40,7 +40,7 @@ func getCoordinatorDeploymentName(clusterName string) string {
 	return clusterName + "-coordinator"
 }
 
-// Gets JobManager service name
+// Gets Coordinator service name
 func getCoordinatorServiceName(clusterName string) string {
 	return clusterName
 }

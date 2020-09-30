@@ -114,13 +114,13 @@ func getDesiredCoordinatorDeployment(
 			SubPath:   "core-site.xml",
 		},
 	}
-	danamicConfigs := prestoCluster.Spec.CatalogConfig.DynamicConfigs
+	dynamicConfigs := prestoCluster.Spec.CatalogConfig.DynamicConfigs
 	var configNameChecker = map[string]string{}
-	if len(danamicConfigs) > 0 {
-		for _, value := range danamicConfigs {
-			configName, _, err := splitDanamicConfigs(value)
+	if len(dynamicConfigs) > 0 {
+		for _, value := range dynamicConfigs {
+			configName, _, err := splitDynamicConfigs(value)
 			if err != nil {
-				fmt.Printf("Failed to get configname from splitDanamicConfigs for value: %s, err: %v\n", value, err)
+				fmt.Printf("Failed to get configname from splitDynamicConfigs for value: %s, err: %v\n", value, err)
 				continue
 			}
 			if _, exist := configNameChecker[configName]; exist {
@@ -294,13 +294,13 @@ func getDesiredWorkerDeployment(
 			SubPath:   "pre-stop.sh",
 		},
 	}
-	danamicConfigs := prestoCluster.Spec.CatalogConfig.DynamicConfigs
+	dynamicConfigs := prestoCluster.Spec.CatalogConfig.DynamicConfigs
 	var configNameChecker = map[string]string{}
-	if len(danamicConfigs) > 0 {
-		for _, value := range danamicConfigs {
-			configName, _, err := splitDanamicConfigs(value)
+	if len(dynamicConfigs) > 0 {
+		for _, value := range dynamicConfigs {
+			configName, _, err := splitDynamicConfigs(value)
 			if err != nil {
-				fmt.Printf("Failed to get configname from splitDanamicConfigs for value: %s, err: %v\n", value, err)
+				fmt.Printf("Failed to get configname from splitDynamicConfigs for value: %s, err: %v\n", value, err)
 				continue
 			}
 			if _, exist := configNameChecker[configName]; exist {
@@ -425,7 +425,7 @@ func getDesiredPrestoConfigMap(
 	}
 	var dynamicArgsCoordinator = prestocluster.Spec.CoordinatorConfig.DynamicArgs
 	for _, argsKeyValue := range dynamicArgsCoordinator {
-		key, value, err := splitDanamicArgs(argsKeyValue)
+		key, value, err := splitDynamicArgs(argsKeyValue)
 		if err != nil {
 			fmt.Printf("split DanamicArgs error for argsKeyValue %s, err: %v", argsKeyValue, err)
 			continue
@@ -445,9 +445,8 @@ func getDesiredPrestoConfigMap(
 		propertiesWorker["node-scheduler.include-coordinator"] = nodeScheduler
 	}
 	var dynamicArgsWorker = prestocluster.Spec.WorkerConfig.DynamicArgs
-	fmt.Printf("*************%s\n", dynamicArgsWorker)
 	for _, argsKeyValue := range dynamicArgsWorker {
-		key, value, err := splitDanamicArgs(argsKeyValue)
+		key, value, err := splitDynamicArgs(argsKeyValue)
 		if err != nil {
 			fmt.Printf("split DanamicArgs error for argsKeyValue %s, err: %v", argsKeyValue, err)
 			continue
@@ -529,18 +528,18 @@ func getDesiredCatalogConfigMap(
 	// dynimic config name
 	dynamicConfigs := prestocluster.Spec.CatalogConfig.DynamicConfigs
 	for _, dynamicConfig := range dynamicConfigs {
-		configName, configValue, err := splitDanamicConfigs(dynamicConfig)
+		configName, configValue, err := splitDynamicConfigs(dynamicConfig)
 		if err != nil {
 			fmt.Printf("Failed to convert dynamicConfig for %s, err: %v", dynamicConfig, err)
 			continue
 		}
-		danamicConfigsArgs := splitDanamicConfigsArgs(configValue)
+		danamicConfigsArgs := splitDynamicConfigsArgs(configValue)
 		if len(danamicConfigsArgs) == 0 {
 			continue
 		}
 		var dynamicArgs = map[string]string{}
 		for _, danamicConfigsArg := range danamicConfigsArgs {
-			argsKey, argsValue, err := splitDanamicArgs(danamicConfigsArg)
+			argsKey, argsValue, err := splitDynamicArgs(danamicConfigsArg)
 			if err != nil {
 				fmt.Printf("Failed to convert args for dynamicConfig %s, err: %v", dynamicConfig, err)
 				continue

@@ -95,7 +95,7 @@ func getPodsPrefix(controllerName string) string {
 	return prefix
 }
 
-func splitDanamicArgs(argsKeyValues string) (argsKey, argsValue string, err error) {
+func splitDynamicArgs(argsKeyValues string) (argsKey, argsValue string, err error) {
 	splited := strings.Split(argsKeyValues, "=")
 	if len(splited) != 2 {
 		var err = errors.New("danamic args key values format error")
@@ -106,7 +106,7 @@ func splitDanamicArgs(argsKeyValues string) (argsKey, argsValue string, err erro
 	return
 }
 
-func splitDanamicConfigs(argsKeyValues string) (configKey, configValue string, err error) {
+func splitDynamicConfigs(argsKeyValues string) (configKey, configValue string, err error) {
 	splited := strings.Split(argsKeyValues, ":")
 	if len(splited) != 2 {
 		var err = errors.New("danamic configs format error")
@@ -117,7 +117,7 @@ func splitDanamicConfigs(argsKeyValues string) (configKey, configValue string, e
 	return
 }
 
-func splitDanamicConfigsArgs(argsKeyValues string) []string {
+func splitDynamicConfigsArgs(argsKeyValues string) []string {
 	splited := strings.Split(argsKeyValues, ";")
 	return splited
 }

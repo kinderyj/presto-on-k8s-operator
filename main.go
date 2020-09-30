@@ -46,7 +46,9 @@ func init() {
 func main() {
 	var metricsAddr string
 	var enableLeaderElection bool
+	var maxConcurrentReconciles int
 	flag.StringVar(&metricsAddr, "metrics-addr", ":18080", "The address the metric endpoint binds to.")
+	flag.IntVar(&maxConcurrentReconciles, "maxConcurrentReconciles", 1, "The maximum number of concurrent Reconciles which can be run. Defaults to 1.")
 	flag.BoolVar(&enableLeaderElection, "enable-leader-election", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
@@ -70,7 +72,7 @@ func main() {
 		Log:      ctrl.Log.WithName("controllers").WithName("PrestoCluster"),
 		Scheme:   mgr.GetScheme(),
 		Recorder: mgr.GetEventRecorderFor("presto-operator"),
-	}).SetupWithManager(mgr); err != nil {
+	}).SetupWithManager(mgr, maxConcurrentReconciles); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "PrestoCluster")
 		os.Exit(1)
 	}

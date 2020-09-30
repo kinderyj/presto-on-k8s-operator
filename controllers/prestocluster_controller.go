@@ -24,6 +24,7 @@ import (
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	ctrlcontroller "sigs.k8s.io/controller-runtime/pkg/controller"
 
 	prestooperatorv1alpha1 "github.com/kinderyj/presto-operator/api/v1alpha1"
 )
@@ -165,8 +166,8 @@ func (handler *PrestoClusterHandler) reconcile(
 
 // SetupWithManager defines the type of Object being *reconciled*, and configures the
 // ControllerManagedBy to respond to create / delete /update events by *reconciling the object*.
-func (r *PrestoClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
+func (r *PrestoClusterReconciler) SetupWithManager(mgr ctrl.Manager, maxConcurrentReconciles int) error {
+	return ctrl.NewControllerManagedBy(mgr).WithOptions(ctrlcontroller.Options{MaxConcurrentReconciles: maxConcurrentReconciles}).
 		For(&prestooperatorv1alpha1.PrestoCluster{}).
 		Complete(r)
 }

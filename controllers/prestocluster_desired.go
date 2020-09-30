@@ -361,18 +361,21 @@ func newConfigmap(presto *prestooperatorv1alpha1.PrestoCluster, configMapName st
 func getDesiredPrestoConfigMap(
 	prestocluster *prestooperatorv1alpha1.PrestoCluster) *corev1.ConfigMap {
 	var propertiesCoordinator = map[string]string{
-		"coordinator":                        "true",
-		"node-scheduler.include-coordinator": "true",
-		"discovery-server.enabled":           "true",
-		"http-server.http.port":              prestocluster.Spec.CoordinatorConfig.HTTPServerPort,
-		"query.max-memory":                   prestocluster.Spec.CoordinatorConfig.MaxMemory,
-		"query.max-memory-per-node":          prestocluster.Spec.CoordinatorConfig.MaxMemoryPerNode,
-		"query.max-total-memory-per-node":    prestocluster.Spec.CoordinatorConfig.TotalMemoryPerNode,
-		"discovery.uri":                      prestocluster.Spec.CoordinatorConfig.DiscoveryURI,
-		"scale-writers":                      prestocluster.Spec.CoordinatorConfig.ScaleWriters,
-		"writer-min-size":                    prestocluster.Spec.CoordinatorConfig.WriterMinSize,
-		"spill-enabled":                      prestocluster.Spec.CoordinatorConfig.SpillEnabled,
-		"spiller-spill-path":                 prestocluster.Spec.CoordinatorConfig.SpillerSpillPath,
+		"coordinator": "true",
+		//"node-scheduler.include-coordinator": prestocluster.Spec.CoordinatorConfig.NodeScheduler,
+		"discovery-server.enabled":        "true",
+		"http-server.http.port":           prestocluster.Spec.CoordinatorConfig.HTTPServerPort,
+		"query.max-memory":                prestocluster.Spec.CoordinatorConfig.MaxMemory,
+		"query.max-memory-per-node":       prestocluster.Spec.CoordinatorConfig.MaxMemoryPerNode,
+		"query.max-total-memory-per-node": prestocluster.Spec.CoordinatorConfig.TotalMemoryPerNode,
+		"discovery.uri":                   prestocluster.Spec.CoordinatorConfig.DiscoveryURI,
+		"scale-writers":                   prestocluster.Spec.CoordinatorConfig.ScaleWriters,
+		"writer-min-size":                 prestocluster.Spec.CoordinatorConfig.WriterMinSize,
+		"spill-enabled":                   prestocluster.Spec.CoordinatorConfig.SpillEnabled,
+		"spiller-spill-path":              prestocluster.Spec.CoordinatorConfig.SpillerSpillPath,
+	}
+	if nodeScheduler := prestocluster.Spec.CoordinatorConfig.NodeScheduler; nodeScheduler != "" {
+		propertiesCoordinator["node-scheduler.include-coordinator"] = nodeScheduler
 	}
 	var dynamicArgsCoordinator = prestocluster.Spec.CoordinatorConfig.DynamicArgs
 	for _, argsKeyValue := range dynamicArgsCoordinator {
@@ -384,13 +387,26 @@ func getDesiredPrestoConfigMap(
 		propertiesCoordinator[key] = value
 	}
 	var propertiesWorker = map[string]string{
-		"coordinator":                        "false",
-		"node-scheduler.include-coordinator": "true",
-		"http-server.http.port":              prestocluster.Spec.WorkerConfig.HTTPServerPort,
-		"query.max-memory":                   prestocluster.Spec.WorkerConfig.MaxMemory,
-		"query.max-memory-per-node":          prestocluster.Spec.WorkerConfig.MaxMemoryPerNode,
-		"query.max-total-memory-per-node":    prestocluster.Spec.WorkerConfig.TotalMemoryPerNode,
-		"discovery.uri":                      "http://" + prestocluster.Name + ":" + prestocluster.Spec.CoordinatorConfig.HTTPServerPort,
+		"coordinator": "false",
+		//"node-scheduler.include-coordinator": prestocluster.Spec.WorkerConfig.NodeScheduler,
+		"http-server.http.port":           prestocluster.Spec.WorkerConfig.HTTPServerPort,
+		"query.max-memory":                prestocluster.Spec.WorkerConfig.MaxMemory,
+		"query.max-memory-per-node":       prestocluster.Spec.WorkerConfig.MaxMemoryPerNode,
+		"query.max-total-memory-per-node": prestocluster.Spec.WorkerConfig.TotalMemoryPerNode,
+		"discovery.uri":                   "http://" + prestocluster.Name + ":" + prestocluster.Spec.CoordinatorConfig.HTTPServerPort,
+	}
+	if nodeScheduler := prestocluster.Spec.WorkerConfig.NodeScheduler; nodeScheduler != "" {
+		propertiesWorker["node-scheduler.include-coordinator"] = nodeScheduler
+	}
+	var dynamicArgsWorker = prestocluster.Spec.WorkerConfig.DynamicArgs
+	fmt.Printf("*************%s\n", dynamicArgsWorker)
+	for _, argsKeyValue := range dynamicArgsWorker {
+		key, value, err := splitDanamicArgs(argsKeyValue)
+		if err != nil {
+			fmt.Printf("split DanamicArgs error for argsKeyValue %s, err: %v", argsKeyValue, err)
+			continue
+		}
+		propertiesWorker[key] = value
 	}
 	var jvmArgs = `-server -Xmx%s -XX:+UseG1GC -XX:G1HeapRegionSize=%s -XX:+UseGCOverheadLimit -XX:+ExplicitGCInvokesConcurrent -XX:+HeapDumpOnOutOfMemoryError -XX:+ExitOnOutOfMemoryError -Djdk.attach.allowAttachSelf=%s`
 	var jvmCoordinator = fmt.Sprintf(jvmArgs,

@@ -84,6 +84,8 @@ spec:
                   type: string
                 maxMemoryPerNode:
                   type: string
+                nodeSchedulerIncludeCoordinator:
+                  type: string
                 resources:
                   description: 'Compute resources required by each Coordinator container.
                     If omitted, a default value will be used. Cannot be updated. More
@@ -159,6 +161,8 @@ spec:
                 maxMemory:
                   type: string
                 maxMemoryPerNode:
+                  type: string
+                nodeSchedulerIncludeCoordinator:
                   type: string
                 resources:
                   description: ResourceRequirements describes the compute resource

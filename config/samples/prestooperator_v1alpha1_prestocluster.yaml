@@ -16,6 +16,8 @@ spec:
       limits:
         memory: "2048M"
         cpu: "2000m"
+    #Uncomment if need.
+    #nodeSchedulerIncludeCoordinator: "false"  
     maxMemory: 1TB
     maxMemoryPerNode: 16GB
     totalMemoryPerNode: 18GB
@@ -29,16 +31,19 @@ spec:
     scaleWriters: "false"
     writerMinSize: 32MB
     spillEnabled: "false"
+    spillerSpillPath: "/home"
     dynamicArgs:
-    - "spiller-spill-path=/tmp"
+    - "spiller-spill-path=/tmp" #This will overwrite the spiller-spill-path which have been set in spillerSpillPath above
   workerConfig: 
     resources:
       requests:
-        memory: "1024Mi"
+        memory: "2048Mi"
         cpu: "200m" 
       limits:
-        memory: "1024Mi"
+        memory: "2048Mi"
         cpu: "200m"
+    #Uncomment if need.
+    #nodeSchedulerIncludeCoordinator: "false"  
     maxMemory: 1TB
     maxMemoryPerNode: 16GB
     totalMemoryPerNode: 18GB
@@ -48,9 +53,9 @@ spec:
     allowAttachSelf: "true"
     dataDir: "/home/presto/data"
     environment: test
-    dynamicArgs:
-    - "wNewArgsFirst=wFirstValue"
-    - "wNewArgsSecond=wFirstValue"
+    #dynamicArgs: #uncomment when need.
+    #- "wNewArgsFirst=wFirstValue" #uncomment when need.
+    #- "wNewArgsSecond=wFirstValue" #uncomment when need.
   catalogConfig: 
     fs.defaultFS: "dlc-test-1258469122"
     fs.cosn.userinfo.secretId: "your-secretId"

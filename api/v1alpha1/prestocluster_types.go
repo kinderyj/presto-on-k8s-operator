@@ -54,6 +54,7 @@ type CoordinatorConfig struct {
 	// More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
 	Resources          corev1.ResourceRequirements `json:"resources,omitempty"`
 	HTTPServerPort     string                      `json:"httpServerPort"`
+	NodeScheduler      string                      `json:"nodeSchedulerIncludeCoordinator,omitempty"`
 	MaxMemory          string                      `json:"maxMemory"`
 	MaxMemoryPerNode   string                      `json:"maxMemoryPerNode"`
 	TotalMemoryPerNode string                      `json:"totalMemoryPerNode"`
@@ -66,14 +67,15 @@ type CoordinatorConfig struct {
 	ScaleWriters       string                      `json:"scaleWriters,omitempty"`
 	WriterMinSize      string                      `json:"writerMinSize,omitempty"`
 	SpillEnabled       string                      `json:"spillEnabled,omitempty"`
-	DynamicArgs        []string                    `json:"dynamicArgs,omitempty"`
 	SpillerSpillPath   string                      `json:"spillerSpillPath,omitempty"`
+	DynamicArgs        []string                    `json:"dynamicArgs,omitempty"`
 }
 
 // WorkerConfig defines the worker config.
 type WorkerConfig struct {
 	Resources          corev1.ResourceRequirements `json:"resources,omitempty"`
 	HTTPServerPort     string                      `json:"httpServerPort"`
+	NodeScheduler      string                      `json:"nodeSchedulerIncludeCoordinator,omitempty"`
 	MaxMemory          string                      `json:"maxMemory"`
 	MaxMemoryPerNode   string                      `json:"maxMemoryPerNode"`
 	TotalMemoryPerNode string                      `json:"totalMemoryPerNode"`

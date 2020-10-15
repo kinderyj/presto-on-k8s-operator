@@ -60,34 +60,34 @@ func (r *PrestoClusterReconciler) Reconcile(req ctrl.Request) (ctrl.Result, erro
 	var handler = PrestoClusterHandler{
 		k8sClient: r.Client,
 		request:   req,
+		observed:  ObservedClusterState{},
 		context:   context.Background(),
 		log:       log,
 		recorder:  r.Recorder,
-		observed:  ObservedClusterState{},
 	}
 	return handler.reconcile(req)
 }
 
-// PrestoClusterHandler holds the context and state for a reconcile request.
+// PrestoClusterHandler holds the context, observed state and desired state for the reconcile request.
 type PrestoClusterHandler struct {
 	k8sClient client.Client
 	request   ctrl.Request
+	observed  ObservedClusterState
+	desired   DesiredClusterState
 	context   context.Context
 	log       logr.Logger
 	recorder  record.EventRecorder
-	observed  ObservedClusterState
-	desired   DesiredClusterState
 }
 
 func (handler *PrestoClusterHandler) reconcile(
 	request ctrl.Request) (ctrl.Result, error) {
 	var k8sClient = handler.k8sClient
-	var log = handler.log
-	var context = handler.context
 	var observed = &handler.observed
 	var desired = &handler.desired
+	var log = handler.log
+	var context = handler.context
 	var err error
-	log.Info("========================================== Reconcile 1: Inspect the current state.")
+	log.Info("========================================== Reconcile Step 1: Inspect the current state.")
 	var observer = ClusterStateObserver{
 		k8sClient: k8sClient,
 		request:   request,
@@ -96,10 +96,10 @@ func (handler *PrestoClusterHandler) reconcile(
 	}
 	err = observer.observe(observed)
 	if err != nil {
-		log.Error(err, "Failed to inspect the current state")
+		log.Error(err, "Failed to inspect the current state.")
 		return ctrl.Result{}, err
 	}
-	log.Info("========================================== Reconcile 2: Get the desired prestocluster object.")
+	log.Info("========================================== Reconcile Step 2: Get the desired prestocluster object.")
 	*desired = getDesiredClusterState(observed.cluster)
 	if desired.PrestoConfigMap != nil {
 		log.Info("Desired state", "PrestoConfigMap", *desired.PrestoConfigMap)
@@ -126,7 +126,7 @@ func (handler *PrestoClusterHandler) reconcile(
 	} else {
 		log.Info("Desired state", "Worker deployment", "nil")
 	}
-	log.Info("========================================== Reconcile 3: start to reconcile.")
+	log.Info("========================================== Reconcile Step 3: start to reconcile.")
 	var reconciler = ClusterReconciler{
 		k8sClient: handler.k8sClient,
 		context:   handler.context,
@@ -144,7 +144,7 @@ func (handler *PrestoClusterHandler) reconcile(
 	}
 	// Finally, we update the status block of the PrestoCluster resource to reflect the
 	// current state of the world
-	log.Info("========================================== Reconcile 4: start to update Presto cluster Status.")
+	log.Info("========================================== Reconcile Step 4: start to update Presto cluster Status.")
 	var statusUpdater = ClusterStatusUpdater{
 		k8sClient: handler.k8sClient,
 		context:   handler.context,
@@ -160,7 +160,6 @@ func (handler *PrestoClusterHandler) reconcile(
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-	//return ctrl.Result{}, err
 	return result, err
 }
 

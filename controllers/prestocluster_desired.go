@@ -135,6 +135,7 @@ func getDesiredCoordinatorDeployment(
 		}
 
 	}
+	var runAsUser int64 = 1000
 	var coordinatorDeployment = &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: prestoCluster.Namespace,
@@ -158,6 +159,9 @@ func getDesiredCoordinatorDeployment(
 					Labels: labels,
 				},
 				Spec: corev1.PodSpec{
+					SecurityContext: &corev1.PodSecurityContext{
+						RunAsUser: &runAsUser,
+					},
 					Containers: []corev1.Container{
 						{
 							Name:            "presto-coordinator",
@@ -315,6 +319,7 @@ func getDesiredWorkerDeployment(
 		}
 
 	}
+	var runAsUser int64 = 1000
 	var coordinatorDeployment = &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: prestoCluster.Namespace,
@@ -338,6 +343,9 @@ func getDesiredWorkerDeployment(
 					Labels: labels,
 				},
 				Spec: corev1.PodSpec{
+					SecurityContext: &corev1.PodSecurityContext{
+						RunAsUser: &runAsUser,
+					},
 					Containers: []corev1.Container{
 						{
 							Name:            "presto-worker",

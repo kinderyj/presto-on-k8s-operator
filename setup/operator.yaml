@@ -166,6 +166,6 @@ spec:
      serviceAccountName: presto-operator
      containers:
        - name: presto-operator
-         image: ccr.ccs.tencentyun.com/kinderyj/presto-operator:v0.3.kb
+         image: ccr.ccs.tencentyun.com/kinderyj/presto-operator:v0.7.kb
          imagePullPolicy: Always
          command: [ "/bin/presto-operator"]

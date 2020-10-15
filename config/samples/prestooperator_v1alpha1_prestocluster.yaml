@@ -42,7 +42,7 @@ spec:
       limits:
         memory: "2048Mi"
         cpu: "200m"
-    #Uncomment if need.
+    #Uncomment when need.
     #nodeSchedulerIncludeCoordinator: "false"  
     maxMemory: 1TB
     maxMemoryPerNode: 16GB

@@ -88,9 +88,9 @@ type WorkerConfig struct {
 	DynamicArgs        []string                    `json:"dynamicArgs,omitempty"`
 }
 
-// PrestoClusterStatus defines the observed state of PrestoCluster
+// PrestoClusterStatus defines the inspected state of PrestoCluster
 type PrestoClusterStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
+	// INSERT ADDITIONAL STATUS FIELD - define inspected state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 	AvailableWorkers int32 `json:"availableWorkers"`
 }

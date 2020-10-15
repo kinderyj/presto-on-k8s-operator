@@ -222,10 +222,10 @@ spec:
           - workers
           type: object
         status:
-          description: PrestoClusterStatus defines the observed state of PrestoCluster
+          description: PrestoClusterStatus defines the inspected state of PrestoCluster
           properties:
             availableWorkers:
-              description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
+              description: 'INSERT ADDITIONAL STATUS FIELD - define inspected state
                 of cluster Important: Run "make" to regenerate code after modifying
                 this file'
               format: int32

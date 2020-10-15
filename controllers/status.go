@@ -16,7 +16,7 @@ limitations under the License.
 
 package controllers
 
-// Updater which updates the status of a cluster based on the status of its
+// Status which updates the status of a cluster based on the status of its
 // components.
 
 import (

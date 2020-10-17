@@ -1,4 +1,4 @@
-module github.com/kinderyj/presto-operator
+module github.com/kinderyj/presto-on-k8s-operator
 
 go 1.13
 

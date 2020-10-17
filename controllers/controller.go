@@ -26,7 +26,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	ctrlcontroller "sigs.k8s.io/controller-runtime/pkg/controller"
 
-	prestooperatorv1alpha1 "github.com/kinderyj/presto-operator/api/v1alpha1"
+	prestooperatorv1alpha1 "github.com/kinderyj/presto-on-k8s-operator/api/v1alpha1"
 )
 
 // PrestoClusterReconciler reconciles a PrestoCluster object

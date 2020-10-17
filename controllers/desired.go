@@ -19,7 +19,7 @@ package controllers
 import (
 	"fmt"
 
-	prestooperatorv1alpha1 "github.com/kinderyj/presto-operator/api/v1alpha1"
+	prestooperatorv1alpha1 "github.com/kinderyj/presto-on-k8s-operator/api/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"

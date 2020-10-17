@@ -26,8 +26,8 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	prestooperatorv1alpha1 "github.com/kinderyj/presto-operator/api/v1alpha1"
-	"github.com/kinderyj/presto-operator/controllers"
+	prestooperatorv1alpha1 "github.com/kinderyj/presto-on-k8s-operator/api/v1alpha1"
+	"github.com/kinderyj/presto-on-k8s-operator/controllers"
 	// +kubebuilder:scaffold:imports
 )
 

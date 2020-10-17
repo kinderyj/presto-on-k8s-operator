@@ -1,5 +1,5 @@
 domain: k8s.io
-repo: github.com/kinderyj/presto-operator
+repo: github.com/kinderyj/presto-on-k8s-operator
 resources:
 - group: prestooperator
   kind: PrestoCluster

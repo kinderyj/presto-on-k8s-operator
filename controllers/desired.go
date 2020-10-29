@@ -214,7 +214,7 @@ func getDesiredCoordinatorService(
 	}
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      prestoCluster.Spec.Name,
+			Name:      prestoCluster.Name,
 			Namespace: prestoCluster.Namespace,
 			OwnerReferences: []metav1.OwnerReference{
 				*metav1.NewControllerRef(prestoCluster, schema.GroupVersionKind{

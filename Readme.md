@@ -18,8 +18,4 @@ make run
 make install
 kubectl apply -f setup/operator.yaml
 
-## TODO: 
-1. Move the deploy scripts to the Makefile.
-2. Deploy by Helm Charts.
-
 ```

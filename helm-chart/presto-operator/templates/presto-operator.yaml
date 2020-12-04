@@ -1,0 +1,178 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: presto-operator
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: presto-operator
+  namespace: presto-operator
+
+---
+
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: presto-operator
+rules:
+  - apiGroups: [""] # "" core API group
+    resources: ["services", "events", "configmaps"]
+    verbs: ["*"]
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["*"]
+  - apiGroups:
+    - prestooperator.k8s.io
+    resources:
+    - prestoclusters
+    verbs:
+    - create
+    - delete
+    - get
+    - list
+    - patch
+    - update
+    - watch
+  - apiGroups:
+    - prestooperator.k8s.io
+    resources:
+    - prestoclusters/status
+    verbs:
+    - get
+    - patch
+    - update
+  - apiGroups:
+    - apps
+    resources:
+    - deployments/status
+    verbs:
+    - get
+  - apiGroups:
+    - ""
+    resources:
+    - configmaps
+    verbs:
+    - create
+    - delete
+    - get
+    - list
+    - patch
+    - update
+    - watch
+  - apiGroups:
+    - ""
+    resources:
+    - events
+    verbs:
+    - create
+    - delete
+    - get
+    - list
+    - patch
+    - update
+    - watch
+  - apiGroups:
+    - ""
+    resources:
+    - events/status
+    verbs:
+    - get
+  - apiGroups:
+    - ""
+    resources:
+    - pods
+    verbs:
+    - get
+    - list
+    - watch
+  - apiGroups:
+    - ""
+    resources:
+    - pods/status
+    verbs:
+    - get
+  - apiGroups:
+    - ""
+    resources:
+    - services
+    verbs:
+    - create
+    - delete
+    - get
+    - list
+    - patch
+    - update
+    - watch
+  - apiGroups:
+    - ""
+    resources:
+    - services/status
+    verbs:
+    - get
+  - apiGroups:
+    - extensions
+    resources:
+    - ingresses
+    verbs:
+    - create
+    - delete
+    - get
+    - list
+    - patch
+    - update
+    - watch
+  - apiGroups:
+    - extensions
+    resources:
+    - ingresses/status
+    verbs:
+    - get
+
+---
+
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: presto-operator
+  namespace: presto-operator
+subjects:
+  - kind: ServiceAccount
+    namespace: presto-operator
+    name: presto-operator
+roleRef:
+  kind: ClusterRole
+  name: presto-operator
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ name: presto-operator
+ namespace: presto-operator
+spec:
+ replicas: 1
+ selector:
+   matchLabels:
+     name: presto-operator
+ template:
+   metadata:
+     labels:
+       name: presto-operator
+   spec:
+     serviceAccountName: presto-operator
+     containers:
+       - name: presto-operator
+         image: {{ .Values.operatorImage.name }}
+         imagePullPolicy: {{ .Values.operatorImage.pullPolicy }}
+         command: [ "/bin/presto-operator"]
+         resources:
+          limits:
+            cpu: 500m
+            memory: 500Mi
+          requests:
+            cpu: 500m
+            memory: 500Mi

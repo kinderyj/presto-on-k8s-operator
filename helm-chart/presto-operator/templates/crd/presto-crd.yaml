@@ -1,0 +1,269 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.2.5
+  creationTimestamp: null
+  name: prestoclusters.prestooperator.k8s.io
+spec:
+  group: prestooperator.k8s.io
+  names:
+    kind: PrestoCluster
+    listKind: PrestoClusterList
+    plural: prestoclusters
+    shortNames:
+    - pcs
+    singular: prestocluster
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: PrestoCluster is the Schema for the prestoclusters API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: PrestoClusterSpec defines the desired state of PrestoCluster
+          properties:
+            alertHost:
+              type: string
+            alertPeriod:
+              type: string
+            catalogConfig:
+              description: CatalogConfig defines the presto catolog config.
+              properties:
+                dynamicConfigs:
+                  items:
+                    type: string
+                  type: array
+                fs.cosn.bucket.region:
+                  type: string
+                fs.cosn.credentials.provider:
+                  description: FsDefaultFS                string   `json:"fs.defaultFS"`
+                  type: string
+                fs.cosn.userinfo.secretId:
+                  type: string
+                fs.cosn.userinfo.secretKey:
+                  type: string
+                fs.cosn.userinfo.sessionToken:
+                  type: string
+                hive.metastore.username:
+                  type: string
+                hiveMetastoreIP:
+                  type: string
+                hiveMetastorePort:
+                  type: string
+                result.properties.hive.metastore.catalog.dir:
+                  type: string
+              required:
+              - fs.cosn.bucket.region
+              - fs.cosn.credentials.provider
+              - fs.cosn.userinfo.secretId
+              - fs.cosn.userinfo.secretKey
+              - fs.cosn.userinfo.sessionToken
+              - hiveMetastoreIP
+              - hiveMetastorePort
+              type: object
+            clusterid:
+              type: string
+            coordinatorConfig:
+              description: CoordinatorConfig defines the coordinator config
+              properties:
+                allowAttachSelf:
+                  type: string
+                dataDir:
+                  type: string
+                discoveryURI:
+                  type: string
+                dynamicArgs:
+                  items:
+                    type: string
+                  type: array
+                environment:
+                  type: string
+                g1HeapRegionSize:
+                  type: string
+                httpServerPort:
+                  type: string
+                maxMemory:
+                  type: string
+                maxMemoryPerNode:
+                  type: string
+                nodeSchedulerIncludeCoordinator:
+                  type: string
+                resources:
+                  description: 'Compute resources required by each Coordinator container.
+                    If omitted, a default value will be used. Cannot be updated. More
+                    info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                  properties:
+                    limits:
+                      additionalProperties:
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                        x-kubernetes-int-or-string: true
+                      description: 'Limits describes the maximum amount of compute
+                        resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                      type: object
+                    requests:
+                      additionalProperties:
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                        x-kubernetes-int-or-string: true
+                      description: 'Requests describes the minimum amount of compute
+                        resources required. If Requests is omitted for a container,
+                        it defaults to Limits if that is explicitly specified, otherwise
+                        to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                      type: object
+                  type: object
+                scaleWriters:
+                  type: string
+                spillEnabled:
+                  type: string
+                spillerSpillPath:
+                  type: string
+                totalMemoryPerNode:
+                  type: string
+                writerMinSize:
+                  type: string
+                xmx:
+                  type: string
+              required:
+              - dataDir
+              - discoveryURI
+              - httpServerPort
+              - maxMemory
+              - maxMemoryPerNode
+              - totalMemoryPerNode
+              - xmx
+              type: object
+            image:
+              type: string
+            lastPeriod:
+              type: string
+            name:
+              description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+                Important: Run "make" to regenerate code after modifying this file'
+              type: string
+            syncPeriod:
+              type: string
+            thresholdCPU:
+              type: string
+            thresholdMemory:
+              type: string
+            workerConfig:
+              description: WorkerConfig defines the worker config.
+              properties:
+                allowAttachSelf:
+                  type: string
+                dataDir:
+                  type: string
+                dynamicArgs:
+                  items:
+                    type: string
+                  type: array
+                environment:
+                  type: string
+                g1HeapRegionSize:
+                  type: string
+                httpServerPort:
+                  type: string
+                maxMemory:
+                  type: string
+                maxMemoryPerNode:
+                  type: string
+                nodeSchedulerIncludeCoordinator:
+                  type: string
+                resources:
+                  description: ResourceRequirements describes the compute resource
+                    requirements.
+                  properties:
+                    limits:
+                      additionalProperties:
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                        x-kubernetes-int-or-string: true
+                      description: 'Limits describes the maximum amount of compute
+                        resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                      type: object
+                    requests:
+                      additionalProperties:
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                        x-kubernetes-int-or-string: true
+                      description: 'Requests describes the minimum amount of compute
+                        resources required. If Requests is omitted for a container,
+                        it defaults to Limits if that is explicitly specified, otherwise
+                        to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                      type: object
+                  type: object
+                totalMemoryPerNode:
+                  type: string
+                xmx:
+                  type: string
+              required:
+              - allowAttachSelf
+              - dataDir
+              - environment
+              - g1HeapRegionSize
+              - httpServerPort
+              - maxMemory
+              - maxMemoryPerNode
+              - totalMemoryPerNode
+              - xmx
+              type: object
+            workers:
+              format: int32
+              type: integer
+          required:
+          - catalogConfig
+          - coordinatorConfig
+          - image
+          - name
+          - workerConfig
+          - workers
+          type: object
+        status:
+          description: PrestoClusterStatus defines the inspected state of PrestoCluster
+          properties:
+            availableWorkers:
+              description: 'INSERT ADDITIONAL STATUS FIELD - define inspected state
+                of cluster Important: Run "make" to regenerate code after modifying
+                this file'
+              format: int32
+              type: integer
+          required:
+          - availableWorkers
+          type: object
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

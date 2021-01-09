@@ -4,7 +4,7 @@ This is the Helm chart for the Presto operator.
 
 ## Installing the Chart
 
-The instructions to install the Flink operator chart:
+The instructions to install the Presto operator chart:
 
 Install presto operator using local repo with command:
 

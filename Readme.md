@@ -1,6 +1,7 @@
 # Notice
 
 This repository is moved to https://github.com/tkestack/presto-on-k8s-operator 
+
 New features、bugfix and long-term support will be suppored at there.
 
 ## Introduction

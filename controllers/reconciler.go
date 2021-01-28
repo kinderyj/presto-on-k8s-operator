@@ -103,8 +103,13 @@ func (reconciler *ClusterReconciler) reconcileDeployment(
 	}
 
 	if desiredDeployment != nil && inspectedDeployment != nil {
+		if *desiredDeployment.Spec.Replicas != *inspectedDeployment.Spec.Replicas {
+			log.Info("Replicas changed",
+				"old replicas", *inspectedDeployment.Spec.Replicas,
+				"new replicas", *desiredDeployment.Spec.Replicas)
+			return reconciler.updateDeployment(desiredDeployment, component)
+		}
 		log.Info("Deployment already exists, no action")
-		return reconciler.updateDeployment(desiredDeployment, component)
 	}
 
 	if desiredDeployment == nil && inspectedDeployment != nil {

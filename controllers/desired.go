@@ -17,7 +17,7 @@ limitations under the License.
 package controllers
 
 import (
-	"fmt"
+	"sort"
 
 	prestooperatorv1alpha1 "github.com/kinderyj/presto-on-k8s-operator/api/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
@@ -66,74 +66,51 @@ func getDesiredCoordinatorDeployment(
 		"app":        "presto-coordinator",
 		"controller": prestoCluster.Name,
 	}
-	var volumeMounts = []corev1.VolumeMount{
-		{
-			Name:      "config",
-			MountPath: "/usr/lib/presto/etc/config.properties",
-			SubPath:   "config.properties.coordinator",
-		},
-		{
-			Name:      "config",
-			MountPath: "/usr/lib/presto/etc/jvm.config",
-			SubPath:   "jvm.config.coordinator",
-		},
-		{
-			Name:      "config",
-			MountPath: "/usr/lib/presto/etc/node.properties",
-			SubPath:   "node.properties.coordinator",
-		},
-		{
-			Name:      "catalog",
-			MountPath: "/usr/lib/presto/etc/catalog/hive.properties",
-			SubPath:   "hive.properties",
-		},
-		{
-			Name:      "catalog",
-			MountPath: "/usr/lib/presto/etc/catalog/jmx.properties",
-			SubPath:   "jmx.properties",
-		},
-		{
-			Name:      "catalog",
-			MountPath: "/usr/lib/presto/etc/catalog/memory.properties",
-			SubPath:   "memory.properties",
-		},
-		{
-			Name:      "catalog",
-			MountPath: "/usr/lib/presto/etc/catalog/tpcds.properties",
-			SubPath:   "tpcds.properties",
-		},
-		{
-			Name:      "catalog",
-			MountPath: "/usr/lib/presto/etc/catalog/tpch.properties",
-			SubPath:   "tpch.properties",
-		},
-		{
-			Name:      "catalog",
-			MountPath: "/tmp/core-site.xml",
-			SubPath:   "core-site.xml",
-		},
-	}
-	dynamicConfigs := prestoCluster.Spec.CatalogConfig.DynamicConfigs
-	var configNameChecker = map[string]string{}
-	if len(dynamicConfigs) > 0 {
-		for _, value := range dynamicConfigs {
-			configName, _, err := splitDynamicConfigs(value)
-			if err != nil {
-				fmt.Printf("Failed to get configname from splitDynamicConfigs for value: %s, err: %v\n", value, err)
-				continue
-			}
-			if _, exist := configNameChecker[configName]; exist {
-				continue
-			}
-			configNameChecker[configName] = ""
-			var danamicConfig = corev1.VolumeMount{
-				Name:      "catalog",
-				MountPath: "/usr/lib/presto/etc/catalog/" + configName,
-				SubPath:   configName,
-			}
-			volumeMounts = append(volumeMounts, danamicConfig)
+	var volumeMounts = []corev1.VolumeMount{}
+	coordinatorEtcConfig := prestoCluster.Spec.CoordinatorConfig.EtcConfig
+	if coordinatorEtcConfig != nil {
+		coordinatorEtcConfigSorted := make([]string, 0)
+		for key := range coordinatorEtcConfig {
+			coordinatorEtcConfigSorted = append(coordinatorEtcConfigSorted, key)
 		}
-
+		sort.Strings(coordinatorEtcConfigSorted)
+		for _, xProperties := range coordinatorEtcConfigSorted {
+			volumeMounts = append(volumeMounts, corev1.VolumeMount{
+				Name:      "config",
+				MountPath: "/usr/lib/presto/etc/" + xProperties,
+				SubPath:   "coordinator." + xProperties,
+			})
+		}
+	}
+	catalogProperties := prestoCluster.Spec.CatalogConfig
+	if catalogProperties != nil {
+		catalogPropertiesSorted := make([]string, 0)
+		for key := range catalogProperties {
+			catalogPropertiesSorted = append(catalogPropertiesSorted, key)
+		}
+		sort.Strings(catalogPropertiesSorted)
+		for _, xProperties := range catalogPropertiesSorted {
+			volumeMounts = append(volumeMounts, corev1.VolumeMount{
+				Name:      "catalog",
+				MountPath: "/usr/lib/presto/etc/catalog/" + xProperties,
+				SubPath:   xProperties,
+			})
+		}
+	}
+	coresite := prestoCluster.Spec.Coresite
+	if coresite != nil {
+		coresiteSorted := make([]string, 0)
+		for key := range coresite {
+			coresiteSorted = append(coresiteSorted, key)
+		}
+		sort.Strings(coresiteSorted)
+		for _, xProperties := range coresiteSorted {
+			volumeMounts = append(volumeMounts, corev1.VolumeMount{
+				Name:      "catalog",
+				MountPath: "/tmp/" + xProperties,
+				SubPath:   xProperties,
+			})
+		}
 	}
 	var runAsUser int64 = 1000
 	var coordinatorDeployment = &appsv1.Deployment{
@@ -248,79 +225,58 @@ func getDesiredWorkerDeployment(
 	var volumeMounts = []corev1.VolumeMount{
 		{
 			Name:      "config",
-			MountPath: "/usr/lib/presto/etc/config.properties",
-			SubPath:   "config.properties.worker",
-		},
-		{
-			Name:      "config",
-			MountPath: "/usr/lib/presto/etc/jvm.config",
-			SubPath:   "jvm.config.worker",
-		},
-		{
-			Name:      "config",
-			MountPath: "/usr/lib/presto/etc/node.properties",
-			SubPath:   "node.properties.worker",
-		},
-		{
-			Name:      "catalog",
-			MountPath: "/usr/lib/presto/etc/catalog/hive.properties",
-			SubPath:   "hive.properties",
-		},
-		{
-			Name:      "catalog",
-			MountPath: "/usr/lib/presto/etc/catalog/jmx.properties",
-			SubPath:   "jmx.properties",
-		},
-		{
-			Name:      "catalog",
-			MountPath: "/usr/lib/presto/etc/catalog/memory.properties",
-			SubPath:   "memory.properties",
-		},
-		{
-			Name:      "catalog",
-			MountPath: "/usr/lib/presto/etc/catalog/tpcds.properties",
-			SubPath:   "tpcds.properties",
-		},
-		{
-			Name:      "catalog",
-			MountPath: "/usr/lib/presto/etc/catalog/tpch.properties",
-			SubPath:   "tpch.properties",
-		},
-		{
-			Name:      "catalog",
-			MountPath: "/tmp/core-site.xml",
-			SubPath:   "core-site.xml",
-		},
-		{
-			Name:      "config",
 			MountPath: "/usr/lib/presto/etc/pre-stop.sh",
 			SubPath:   "pre-stop.sh",
 		},
 	}
-	dynamicConfigs := prestoCluster.Spec.CatalogConfig.DynamicConfigs
-	var configNameChecker = map[string]string{}
-	if len(dynamicConfigs) > 0 {
-		for _, value := range dynamicConfigs {
-			configName, _, err := splitDynamicConfigs(value)
-			if err != nil {
-				fmt.Printf("Failed to get configname from splitDynamicConfigs for value: %s, err: %v\n", value, err)
-				continue
-			}
-			if _, exist := configNameChecker[configName]; exist {
-				continue
-			}
-			configNameChecker[configName] = ""
-			var danamicConfig = corev1.VolumeMount{
-				Name:      "catalog",
-				MountPath: "/usr/lib/presto/etc/catalog/" + configName,
-				SubPath:   configName,
-			}
-			volumeMounts = append(volumeMounts, danamicConfig)
+	workerEtcConfig := prestoCluster.Spec.WorkerConfig.EtcConfig
+	if workerEtcConfig != nil {
+		workerEtcConfigSorted := make([]string, 0)
+		for key := range workerEtcConfig {
+			workerEtcConfigSorted = append(workerEtcConfigSorted, key)
 		}
-
+		sort.Strings(workerEtcConfigSorted)
+		for _, xProperties := range workerEtcConfigSorted {
+			volumeMounts = append(volumeMounts, corev1.VolumeMount{
+				Name:      "config",
+				MountPath: "/usr/lib/presto/etc/" + xProperties,
+				SubPath:   "worker." + xProperties,
+				ReadOnly:  true,
+			})
+		}
+	}
+	catalogProperties := prestoCluster.Spec.CatalogConfig
+	if catalogProperties != nil {
+		catalogPropertiesSorted := make([]string, 0)
+		for key := range catalogProperties {
+			catalogPropertiesSorted = append(catalogPropertiesSorted, key)
+		}
+		sort.Strings(catalogPropertiesSorted)
+		for _, xProperties := range catalogPropertiesSorted {
+			volumeMounts = append(volumeMounts, corev1.VolumeMount{
+				Name:      "catalog",
+				MountPath: "/usr/lib/presto/etc/catalog/" + xProperties,
+				SubPath:   xProperties,
+			})
+		}
+	}
+	coresite := prestoCluster.Spec.Coresite
+	if coresite != nil {
+		coresiteSorted := make([]string, 0)
+		for key := range coresite {
+			coresiteSorted = append(coresiteSorted, key)
+		}
+		sort.Strings(coresiteSorted)
+		for _, xProperties := range coresiteSorted {
+			volumeMounts = append(volumeMounts, corev1.VolumeMount{
+				Name:      "catalog",
+				MountPath: "/tmp/" + xProperties,
+				SubPath:   xProperties,
+			})
+		}
 	}
 	var runAsUser int64 = 1000
-	var coordinatorDeployment = &appsv1.Deployment{
+	var workerDeployment = &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: prestoCluster.Namespace,
 			Name:      prestoCluster.Name + "-worker",
@@ -393,7 +349,7 @@ func getDesiredWorkerDeployment(
 			},
 		},
 	}
-	return coordinatorDeployment
+	return workerDeployment
 }
 
 func newConfigmap(presto *prestooperatorv1alpha1.PrestoCluster, configMapName string, data map[string]string) *v1.ConfigMap {
@@ -412,156 +368,39 @@ func newConfigmap(presto *prestooperatorv1alpha1.PrestoCluster, configMapName st
 
 // Gets the desired Presto configMap.
 func getDesiredPrestoConfigMap(
-	prestocluster *prestooperatorv1alpha1.PrestoCluster) *corev1.ConfigMap {
-	var propertiesCoordinator = map[string]string{
-		"coordinator": "true",
-		//"node-scheduler.include-coordinator": prestocluster.Spec.CoordinatorConfig.NodeScheduler,
-		"discovery-server.enabled":        "true",
-		"http-server.http.port":           prestocluster.Spec.CoordinatorConfig.HTTPServerPort,
-		"query.max-memory":                prestocluster.Spec.CoordinatorConfig.MaxMemory,
-		"query.max-memory-per-node":       prestocluster.Spec.CoordinatorConfig.MaxMemoryPerNode,
-		"query.max-total-memory-per-node": prestocluster.Spec.CoordinatorConfig.TotalMemoryPerNode,
-		"discovery.uri":                   prestocluster.Spec.CoordinatorConfig.DiscoveryURI,
-		"scale-writers":                   prestocluster.Spec.CoordinatorConfig.ScaleWriters,
-		"writer-min-size":                 prestocluster.Spec.CoordinatorConfig.WriterMinSize,
-		"spill-enabled":                   prestocluster.Spec.CoordinatorConfig.SpillEnabled,
-		"spiller-spill-path":              prestocluster.Spec.CoordinatorConfig.SpillerSpillPath,
+	prestoclusters *prestooperatorv1alpha1.PrestoCluster) *corev1.ConfigMap {
+	var prestocluster = prestooperatorv1alpha1.PrestoCluster{}
+	prestoclusters.DeepCopyInto(&prestocluster)
+	var configmapCoordinatorEtcConfig = prestocluster.Spec.CoordinatorConfig.EtcConfig
+	var configmapWorkerEtcConfig = prestocluster.Spec.WorkerConfig.EtcConfig
+	var data = map[string]string{}
+	for key, value := range configmapCoordinatorEtcConfig {
+		data["coordinator."+key] = value
 	}
-	if nodeScheduler := prestocluster.Spec.CoordinatorConfig.NodeScheduler; nodeScheduler != "" {
-		propertiesCoordinator["node-scheduler.include-coordinator"] = nodeScheduler
+	for key, value := range configmapWorkerEtcConfig {
+		data["worker."+key] = value
 	}
-	var dynamicArgsCoordinator = prestocluster.Spec.CoordinatorConfig.DynamicArgs
-	for _, argsKeyValue := range dynamicArgsCoordinator {
-		key, value, err := splitDynamicArgs(argsKeyValue)
-		if err != nil {
-			fmt.Printf("split DanamicArgs error for argsKeyValue %s, err: %v", argsKeyValue, err)
-			continue
-		}
-		propertiesCoordinator[key] = value
-	}
-	var propertiesWorker = map[string]string{
-		"coordinator": "false",
-		//"node-scheduler.include-coordinator": prestocluster.Spec.WorkerConfig.NodeScheduler,
-		"http-server.http.port":           prestocluster.Spec.WorkerConfig.HTTPServerPort,
-		"query.max-memory":                prestocluster.Spec.WorkerConfig.MaxMemory,
-		"query.max-memory-per-node":       prestocluster.Spec.WorkerConfig.MaxMemoryPerNode,
-		"query.max-total-memory-per-node": prestocluster.Spec.WorkerConfig.TotalMemoryPerNode,
-		"discovery.uri":                   "http://" + prestocluster.Name + ":" + prestocluster.Spec.CoordinatorConfig.HTTPServerPort,
-	}
-	if nodeScheduler := prestocluster.Spec.WorkerConfig.NodeScheduler; nodeScheduler != "" {
-		propertiesWorker["node-scheduler.include-coordinator"] = nodeScheduler
-	}
-	var dynamicArgsWorker = prestocluster.Spec.WorkerConfig.DynamicArgs
-	for _, argsKeyValue := range dynamicArgsWorker {
-		key, value, err := splitDynamicArgs(argsKeyValue)
-		if err != nil {
-			fmt.Printf("split DanamicArgs error for argsKeyValue %s, err: %v", argsKeyValue, err)
-			continue
-		}
-		propertiesWorker[key] = value
-	}
-	var jvmArgs = `-server -Xmx%s -XX:+UseG1GC -XX:G1HeapRegionSize=%s -XX:+UseGCOverheadLimit -XX:+ExplicitGCInvokesConcurrent -XX:+HeapDumpOnOutOfMemoryError -XX:+ExitOnOutOfMemoryError -Djdk.attach.allowAttachSelf=%s`
-	var jvmCoordinator = fmt.Sprintf(jvmArgs,
-		prestocluster.Spec.CoordinatorConfig.Xmx,
-		prestocluster.Spec.CoordinatorConfig.G1HeapRegionSize,
-		prestocluster.Spec.CoordinatorConfig.AllowAttachSelf)
-	var jvmWorker = fmt.Sprintf(jvmArgs,
-		prestocluster.Spec.WorkerConfig.Xmx,
-		prestocluster.Spec.WorkerConfig.G1HeapRegionSize,
-		prestocluster.Spec.WorkerConfig.AllowAttachSelf)
-	var nodeCoordinator = map[string]string{
-		"node.environment": prestocluster.Spec.CoordinatorConfig.Environment,
-		"node.data-dir":    prestocluster.Spec.CoordinatorConfig.DataDir,
-	}
-	var nodeWorker = map[string]string{
-		"node.environment": prestocluster.Spec.WorkerConfig.Environment,
-		"node.data-dir":    prestocluster.Spec.WorkerConfig.DataDir,
-	}
-	var data = map[string]string{
-		"config.properties.coordinator": getProperties(propertiesCoordinator),
-		"config.properties.worker":      getProperties(propertiesWorker),
-		"jvm.config.coordinator":        getPropertiesFields(jvmCoordinator),
-		"jvm.config.worker":             getPropertiesFields(jvmWorker),
-		"node.properties.coordinator":   getProperties(nodeCoordinator),
-		"node.properties.worker":        getProperties(nodeWorker),
-		"pre-stop.sh":                   preStopScript,
-	}
+	data["pre-stop.sh"] = preStopScript
 	var clusterName = prestocluster.Name
-	return newConfigmap(prestocluster, getPrestoConfigMapName(clusterName), data)
+	return newConfigmap(&prestocluster, getPrestoConfigMapName(clusterName), data)
 }
 
 // Gets the desired Catalog configMap.
 func getDesiredCatalogConfigMap(
-	prestocluster *prestooperatorv1alpha1.PrestoCluster) *corev1.ConfigMap {
-	var propertiesJmx = map[string]string{
-		"connector.name": "jmx",
+	prestoclusters *prestooperatorv1alpha1.PrestoCluster) *corev1.ConfigMap {
+	var prestocluster = prestooperatorv1alpha1.PrestoCluster{}
+	prestoclusters.DeepCopyInto(&prestocluster)
+	var configmapCatalogConfig = prestocluster.Spec.CatalogConfig
+	var configmapCoresite = prestocluster.Spec.Coresite
+	var data = map[string]string{}
+	for key, value := range configmapCatalogConfig {
+		data[key] = value
 	}
-	var propertiesMemory = map[string]string{
-		"connector.name": "memory",
+	for key, value := range configmapCoresite {
+		data[key] = value
 	}
-	var propertiesTpcds = map[string]string{
-		"connector.name": "tpcds",
-	}
-	var propertiesTpch = map[string]string{
-		"connector.name":       "tpch",
-		"tpch.splits-per-node": "4",
-	}
-	var propertiesHive = map[string]string{
-		"connector.name":                        "hive-hadoop2",
-		"hive.metastore.uri":                    "thrift://" + prestocluster.Spec.CatalogConfig.HiveMetastoreIP + ":" + prestocluster.Spec.CatalogConfig.HiveMetastorePort,
-		"hive.config.resources":                 "/tmp/core-site.xml",
-		"hive.non-managed-table-writes-enabled": "true",
-		"hive.allow-add-column":                 "true",
-		"hive.allow-drop-column":                "true",
-		"hive.allow-drop-table":                 "true",
-		"hive.allow-rename-table":               "true",
-		"hive.allow-rename-column":              "true",
-	}
-	var coresite = fmt.Sprintf(coreSite,
-		prestocluster.Spec.CatalogConfig.FsDefaultFS,
-		prestocluster.Spec.CatalogConfig.CosnSecretID,
-		prestocluster.Spec.CatalogConfig.CosnSecretKey,
-		prestocluster.Spec.CatalogConfig.CosnRegion,
-	)
-
-	var data = map[string]string{
-		"jmx.properties":    getProperties(propertiesJmx),
-		"memory.properties": getProperties(propertiesMemory),
-		"tpcds.properties":  getProperties(propertiesTpcds),
-		"tpch.properties":   getProperties(propertiesTpch),
-		"hive.properties":   getProperties(propertiesHive),
-		"core-site.xml":     getPropertiesStrings(coresite),
-	}
-	// dynimic config name
-	dynamicConfigs := prestocluster.Spec.CatalogConfig.DynamicConfigs
-	for _, dynamicConfig := range dynamicConfigs {
-		configName, configValue, err := splitDynamicConfigs(dynamicConfig)
-		if err != nil {
-			fmt.Printf("Failed to convert dynamicConfig for %s, err: %v", dynamicConfig, err)
-			continue
-		}
-		danamicConfigsArgs := splitDynamicConfigsArgs(configValue)
-		if len(danamicConfigsArgs) == 0 {
-			continue
-		}
-		var dynamicArgs = map[string]string{}
-		for _, danamicConfigsArg := range danamicConfigsArgs {
-			argsKey, argsValue, err := splitDynamicArgs(danamicConfigsArg)
-			if err != nil {
-				fmt.Printf("Failed to convert args for dynamicConfig %s, err: %v", dynamicConfig, err)
-				continue
-			}
-			dynamicArgs[argsKey] = argsValue
-		}
-		if value, exist := data[configName]; exist {
-			data[configName] = getProperties(dynamicArgs) + value
-		} else {
-			data[configName] = getProperties(dynamicArgs)
-		}
-	}
-
 	var clusterName = prestocluster.Name
-	return newConfigmap(prestocluster, getCatalogConfigMapName(clusterName), data)
+	return newConfigmap(&prestocluster, getCatalogConfigMapName(clusterName), data)
 
 }
 

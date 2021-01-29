@@ -33,18 +33,8 @@ type PrestoClusterSpec struct {
 	Workers           *int32            `json:"workers"`
 	CoordinatorConfig CoordinatorConfig `json:"coordinatorConfig"`
 	WorkerConfig      WorkerConfig      `json:"workerConfig"`
-	CatalogConfig     CatalogConfig     `json:"catalogConfig"`
-}
-
-// CatalogConfig defines the presto catolog config.
-type CatalogConfig struct {
-	FsDefaultFS       string   `json:"fs.defaultFS"`
-	CosnSecretID      string   `json:"fs.cosn.userinfo.secretId"`
-	CosnSecretKey     string   `json:"fs.cosn.userinfo.secretKey"`
-	CosnRegion        string   `json:"fs.cosn.bucket.region"`
-	HiveMetastoreIP   string   `json:"hiveMetastoreIP"`
-	HiveMetastorePort string   `json:"hiveMetastorePort"`
-	DynamicConfigs    []string `json:"dynamicConfigs,omitempty"`
+	CatalogConfig     map[string]string `json:"catalogConfig,omitempty"`
+	Coresite          map[string]string `json:"coresite,omitempty"`
 }
 
 // CoordinatorConfig defines the coordinator config
@@ -53,39 +43,14 @@ type CoordinatorConfig struct {
 	// If omitted, a default value will be used.
 	// Cannot be updated.
 	// More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
-	Resources          corev1.ResourceRequirements `json:"resources,omitempty"`
-	HTTPServerPort     string                      `json:"httpServerPort"`
-	NodeScheduler      string                      `json:"nodeSchedulerIncludeCoordinator,omitempty"`
-	MaxMemory          string                      `json:"maxMemory"`
-	MaxMemoryPerNode   string                      `json:"maxMemoryPerNode"`
-	TotalMemoryPerNode string                      `json:"totalMemoryPerNode"`
-	DiscoveryURI       string                      `json:"discoveryURI"`
-	Xmx                string                      `json:"xmx"`
-	G1HeapRegionSize   string                      `json:"g1HeapRegionSize,omitempty"`
-	AllowAttachSelf    string                      `json:"allowAttachSelf,omitempty"`
-	Environment        string                      `json:"environment,omitempty"`
-	DataDir            string                      `json:"dataDir"`
-	ScaleWriters       string                      `json:"scaleWriters,omitempty"`
-	WriterMinSize      string                      `json:"writerMinSize,omitempty"`
-	SpillEnabled       string                      `json:"spillEnabled,omitempty"`
-	SpillerSpillPath   string                      `json:"spillerSpillPath,omitempty"`
-	DynamicArgs        []string                    `json:"dynamicArgs,omitempty"`
+	Resources corev1.ResourceRequirements `json:"resources,omitempty"`
+	EtcConfig map[string]string           `json:"etcConfig,omitempty"`
 }
 
 // WorkerConfig defines the worker config.
 type WorkerConfig struct {
-	Resources          corev1.ResourceRequirements `json:"resources,omitempty"`
-	HTTPServerPort     string                      `json:"httpServerPort"`
-	NodeScheduler      string                      `json:"nodeSchedulerIncludeCoordinator,omitempty"`
-	MaxMemory          string                      `json:"maxMemory"`
-	MaxMemoryPerNode   string                      `json:"maxMemoryPerNode"`
-	TotalMemoryPerNode string                      `json:"totalMemoryPerNode"`
-	Xmx                string                      `json:"xmx"`
-	G1HeapRegionSize   string                      `json:"g1HeapRegionSize"`
-	AllowAttachSelf    string                      `json:"allowAttachSelf"`
-	Environment        string                      `json:"environment"`
-	DataDir            string                      `json:"dataDir"`
-	DynamicArgs        []string                    `json:"dynamicArgs,omitempty"`
+	Resources corev1.ResourceRequirements `json:"resources,omitempty"`
+	EtcConfig map[string]string           `json:"etcConfig,omitempty"`
 }
 
 // PrestoClusterStatus defines the inspected state of PrestoCluster

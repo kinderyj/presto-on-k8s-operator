@@ -39,57 +39,16 @@ spec:
           description: PrestoClusterSpec defines the desired state of PrestoCluster
           properties:
             catalogConfig:
-              description: CatalogConfig defines the presto catolog config.
-              properties:
-                dynamicConfigs:
-                  items:
-                    type: string
-                  type: array
-                fs.cosn.bucket.region:
-                  type: string
-                fs.cosn.userinfo.secretId:
-                  type: string
-                fs.cosn.userinfo.secretKey:
-                  type: string
-                fs.defaultFS:
-                  type: string
-                hiveMetastoreIP:
-                  type: string
-                hiveMetastorePort:
-                  type: string
-              required:
-              - fs.cosn.bucket.region
-              - fs.cosn.userinfo.secretId
-              - fs.cosn.userinfo.secretKey
-              - fs.defaultFS
-              - hiveMetastoreIP
-              - hiveMetastorePort
+              additionalProperties:
+                type: string
               type: object
             coordinatorConfig:
               description: CoordinatorConfig defines the coordinator config
               properties:
-                allowAttachSelf:
-                  type: string
-                dataDir:
-                  type: string
-                discoveryURI:
-                  type: string
-                dynamicArgs:
-                  items:
+                etcConfig:
+                  additionalProperties:
                     type: string
-                  type: array
-                environment:
-                  type: string
-                g1HeapRegionSize:
-                  type: string
-                httpServerPort:
-                  type: string
-                maxMemory:
-                  type: string
-                maxMemoryPerNode:
-                  type: string
-                nodeSchedulerIncludeCoordinator:
-                  type: string
+                  type: object
                 resources:
                   description: 'Compute resources required by each Coordinator container.
                     If omitted, a default value will be used. Cannot be updated. More
@@ -118,26 +77,10 @@ spec:
                         to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                       type: object
                   type: object
-                scaleWriters:
-                  type: string
-                spillEnabled:
-                  type: string
-                spillerSpillPath:
-                  type: string
-                totalMemoryPerNode:
-                  type: string
-                writerMinSize:
-                  type: string
-                xmx:
-                  type: string
-              required:
-              - dataDir
-              - discoveryURI
-              - httpServerPort
-              - maxMemory
-              - maxMemoryPerNode
-              - totalMemoryPerNode
-              - xmx
+              type: object
+            coresite:
+              additionalProperties:
+                type: string
               type: object
             image:
               type: string
@@ -148,26 +91,10 @@ spec:
             workerConfig:
               description: WorkerConfig defines the worker config.
               properties:
-                allowAttachSelf:
-                  type: string
-                dataDir:
-                  type: string
-                dynamicArgs:
-                  items:
+                etcConfig:
+                  additionalProperties:
                     type: string
-                  type: array
-                environment:
-                  type: string
-                g1HeapRegionSize:
-                  type: string
-                httpServerPort:
-                  type: string
-                maxMemory:
-                  type: string
-                maxMemoryPerNode:
-                  type: string
-                nodeSchedulerIncludeCoordinator:
-                  type: string
+                  type: object
                 resources:
                   description: ResourceRequirements describes the compute resource
                     requirements.
@@ -195,26 +122,11 @@ spec:
                         to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                       type: object
                   type: object
-                totalMemoryPerNode:
-                  type: string
-                xmx:
-                  type: string
-              required:
-              - allowAttachSelf
-              - dataDir
-              - environment
-              - g1HeapRegionSize
-              - httpServerPort
-              - maxMemory
-              - maxMemoryPerNode
-              - totalMemoryPerNode
-              - xmx
               type: object
             workers:
               format: int32
               type: integer
           required:
-          - catalogConfig
           - coordinatorConfig
           - image
           - name

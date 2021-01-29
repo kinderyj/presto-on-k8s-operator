@@ -4,7 +4,7 @@ IMG ?= controller:latest
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true"
 # The Kubernetes namespace in which the operator will be deployed.
-PRESTO_OPERATOR_NAMESPACE ?= presto-operator-system
+PRESTO_OPERATOR_NAMESPACE ?= presto-operator
 # Prefix for Kubernetes resource names. When deploying multiple operators, make sure that the names of cluster-scoped resources are not duplicated.
 RESOURCE_PREFIX ?= presto-operator-
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
@@ -23,6 +23,19 @@ test: generate fmt vet manifests
 # Build manager binary
 manager: generate fmt vet
 	go build -o bin/manager main.go
+
+# Build presto-operator
+builds: generate fmt vet
+	GOOS=linux go build -o setup/presto-operator main.go
+
+# Build image
+image: builds
+	docker build setup/. -t ${IMG}
+	docker push ${IMG}
+
+# Build image and update the deploy in the clusters.
+update: image
+	kubectl set image deploy presto-operator -n presto-operator presto-operator=${IMG}
 
 # Run against the configured Kubernetes cluster in ~/.kube/config
 run: generate fmt vet manifests

@@ -5,7 +5,7 @@ metadata:
   namespace: default
 spec:
   name: presto-test-cluster
-  image: ccr.ccs.tencentyun.com/dlc_2020/tencent-dlc-presto:v1
+  image: presto-image
   workers: 2
   test: test
   coordinatorConfig:
